@@ -9,7 +9,9 @@ export default defineConfig({
   plugins: [
     vue(),
     tailwindcss(),
-    ui(),
+    ui({
+      colorMode: false,
+    }),
     VitePWA({
       registerType: "prompt",
       injectRegister: false,
