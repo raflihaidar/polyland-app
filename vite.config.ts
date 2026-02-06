@@ -11,6 +11,17 @@ export default defineConfig({
     tailwindcss(),
     ui({
       colorMode: false,
+      ui: {
+        colors: {
+          primary: "green",
+          warning: "yellow",
+          secondary: "white",
+          info: "blue",
+          dark: "dark",
+          text: "text",
+          secondText: "secondText",
+        },
+      },
     }),
     VitePWA({
       registerType: "prompt",
@@ -22,9 +33,9 @@ export default defineConfig({
       },
 
       manifest: {
-        name: "polyland-app",
-        short_name: "polyland-app",
-        description: "polyland-app",
+        name: "jejak-tanah",
+        short_name: "jejak-tanah",
+        description: "jejak-tanah",
         theme_color: "#ffffff",
       },
 

@@ -19,7 +19,8 @@
     "tailwindcss": "^4.1.17",
     "viem": "^2.39.3",
     "vue": "^3.5.22",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
