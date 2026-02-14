@@ -13,11 +13,13 @@ declare module 'vue' {
   export interface GlobalComponents {
     Account: typeof import('./src/components/Account.vue')['default']
     Balance: typeof import('./src/components/Balance.vue')['default']
+    NavMobile: typeof import('./src/components/shared/NavMobile.vue')['default']
     PublicationButton: typeof import('./src/components/PublicationButton.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SendTransaction: typeof import('./src/components/SendTransaction.vue')['default']
     SwitchNetwork: typeof import('./src/components/SwitchNetwork.vue')['default']
+    UAlert: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Alert.vue')['default']
     UApp: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/App.vue')['default']
     UButton: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
     UCheckbox: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Checkbox.vue')['default']

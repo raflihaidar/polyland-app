@@ -1,29 +1,46 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { useAuthStore } from "../store/auth.store";
+import { ref } from "vue";
+import { useAuthStore } from "../stores/auth.store";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
+import type { FormSubmitEvent } from "@nuxt/ui";
+import * as z from "zod";
 
 const error = ref<string | null>(null);
-
 const store = useAuthStore();
 const { isAuthenticated, isMetaMaskSupported } = storeToRefs(store);
-
 const router = useRouter();
-
-const email = ref<string | null>(null);
-const password = ref<string | null>(null);
+const form = ref<Partial<Schema>>({
+    email: "",
+    password: "",
+});
 const rememberMe = ref<boolean>(false);
+const alert = ref<{ show: boolean; message: string }>({
+    show: false,
+    message: "",
+});
+const show = ref<boolean>(false);
+const schema = z.object({
+    email: z.email("Email tidak valid").trim(),
+    password: z.string().trim(),
+});
+type Schema = z.output<typeof schema>;
+
+const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
+    const { status, message } = await store.login(event.data);
+    alert.value = {
+        show: status === "error" ? true : false,
+        message,
+    };
+
+    if (status === "success") router.push("/");
+};
 
 const connect = async (): Promise<void> => {
     await store.connectMetaMask();
 
     if (isAuthenticated) router.push("/");
 };
-
-onMounted(() => {
-    store.attempt();
-});
 </script>
 
 <template>
@@ -36,41 +53,75 @@ onMounted(() => {
                 Masuk
             </h1>
 
-            <UInput
-                v-model="email"
-                size="xl"
-                icon="iconoir:mail"
-                placeholder="Masukkan Email"
-                class="mb-4 outline-none"
-                :ui="{ base: 'rounded-full' }"
-            />
-            <UInput
-                v-model="password"
-                type="password"
-                size="xl"
-                icon="iconoir:lock"
-                placeholder="Masukkan Password"
-                class="mb-4 rounded-full"
-                :ui="{ base: 'rounded-full' }"
+            <UAlert
+                v-if="alert.show"
+                :description="alert.message"
+                color="error"
+                class="rounded-lg mb-4"
             />
 
-            <section class="flex justify-between mt-5">
-                <div class="flex items-center gap-x-3">
-                    <UCheckbox v-model="rememberMe" />
-                    <p>Ingat Saya</p>
-                </div>
+            <UForm
+                :schema="schema"
+                :state="form"
+                class="space-y-4"
+                @submit="login"
+            >
+                <UFormField name="email" class="mb-4 outline-none">
+                    <UInput
+                        v-model="form.email"
+                        size="xl"
+                        icon="iconoir:mail"
+                        placeholder="Masukkan Email"
+                        class="rounded-full"
+                        :ui="{ base: 'rounded-full' }"
+                    />
+                </UFormField>
+                <UFormField name="password" class="mb-4 outline-none">
+                    <UInput
+                        v-model="form.password"
+                        :type="show ? 'text' : 'password'"
+                        size="xl"
+                        icon="iconoir:lock"
+                        placeholder="Masukkan Password"
+                        class="rounded-full"
+                        :ui="{ base: 'rounded-full' }"
+                    >
+                        <template #trailing>
+                            <UButton
+                                color="neutral"
+                                variant="link"
+                                size="sm"
+                                :icon="
+                                    show ? 'i-lucide-eye-off' : 'i-lucide-eye'
+                                "
+                                :aria-label="
+                                    show ? 'Hide password' : 'Show password'
+                                "
+                                :aria-pressed="show"
+                                aria-controls="password"
+                                @click="show = !show"
+                            />
+                        </template>
+                    </UInput>
+                </UFormField>
+                <section class="flex justify-between mt-5">
+                    <div class="flex items-center gap-x-3">
+                        <UCheckbox v-model="rememberMe" />
+                        <p>Ingat Saya</p>
+                    </div>
 
-                <ULink>Lupa Password?</ULink>
-            </section>
+                    <ULink>Lupa Password?</ULink>
+                </section>
 
-            <UButton
-                v-if="isMetaMaskSupported"
-                @click="connect"
-                label="Masuk"
-                variant="solid"
-                block
-                class="mt-5 rounded-full py-3"
-            />
+                <UButton
+                    type="submit"
+                    label="Masuk"
+                    :loading="store.isLoading('LOGIN')"
+                    variant="solid"
+                    block
+                    class="mt-5 rounded-full py-3"
+                />
+            </UForm>
 
             <p class="text-center mt-5">
                 Belum punya akun?
@@ -90,8 +141,10 @@ onMounted(() => {
             <UButton
                 v-if="isMetaMaskSupported"
                 @click="connect"
+                :loading="store.isLoading('CONNECT_WALLET')"
                 label="Connect Wallet"
                 variant="solid"
+                icon="token-branded:metamask"
                 block
                 class="mt-5 rounded-full py-3"
             />

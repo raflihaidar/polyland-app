@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { useAuthStore } from "../store/auth.store";
+import { ref } from "vue";
+import { useAuthStore } from "../stores/auth.store";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import type { FormSubmitEvent } from "@nuxt/ui";
@@ -12,23 +12,69 @@ const store = useAuthStore();
 const { isAuthenticated, isMetaMaskSupported } = storeToRefs(store);
 const schema = z
     .object({
-        name: z.string().min(2).max(100),
-        username: z.string().min(2).max(100),
-        email: z.string().email(),
-        password: z.string().min(8).max(100),
-        confirmPassword: z.string().min(8).max(100),
+        name: z
+            .string()
+            .min(2, {
+                message: "Username minimal 2 kata",
+            })
+            .trim()
+            .transform((val) =>
+                val
+                    .toLowerCase()
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" "),
+            ),
+        username: z
+            .string()
+            .min(2, {
+                message: "Username minimal 2 kata",
+            })
+            .max(100, {
+                message: "Username terlalu panjang, maksimal 100 kata",
+            })
+            .trim()
+            .normalize(),
+        email: z.email("Email tidak valid").trim(),
+        password: z
+            .string()
+            .trim()
+            .min(8, { message: "Password minimal terdiri dari 8 karakter" })
+            .regex(/[a-z]/, {
+                message: "Password harus mengandung minimal satu huruf kecil",
+            })
+            .regex(/[A-Z]/, {
+                message: "Password harus mengandung minimal satu huruf besar",
+            })
+            .regex(/\d/, {
+                message: "Password harus mengandung minimal satu angka",
+            })
+            .regex(/[\W_]/, {
+                message:
+                    "Password harus mengandung minimal satu karakter khusus",
+            }),
+        confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
         message: "Passwords do not match",
         path: ["confirmPassword"],
     });
 
+type Schema = z.output<typeof schema>;
+
 const router = useRouter();
-const form = ref<any>({
+const form = ref<Partial<Schema>>({
     name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
+});
+const showPassword = ref<boolean>(false);
+const showConfirmPassowrd = ref<boolean>(false);
+const alert = ref<{ show: boolean; message: string }>({
+    show: false,
+    message: "",
 });
 
 const connect = async (): Promise<void> => {
@@ -37,13 +83,14 @@ const connect = async (): Promise<void> => {
     if (isAuthenticated) router.push("/");
 };
 
-const onSubmit = async (): Promise<void> => {
-    if (isAuthenticated) router.push("/");
+const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
+    const { status, message } = await store.register(event.data);
+    alert.value = {
+        show: status === "error" ? true : false,
+        message,
+    };
+    if (status) router.push("/login");
 };
-
-onMounted(() => {
-    store.attempt();
-});
 </script>
 
 <template>
@@ -56,63 +103,120 @@ onMounted(() => {
                 Daftar
             </h1>
 
+            <UAlert
+                v-if="alert.show"
+                :description="alert.message"
+                color="error"
+                class="rounded-lg mb-4"
+            />
+
             <UForm
                 :schema="schema"
                 :state="form"
                 class="space-y-4"
                 @submit="onSubmit"
             >
-                <UInput
-                    v-model="form.name"
-                    size="xl"
-                    icon="iconoir:user-square"
-                    placeholder="Masukkan Nama"
-                    class="mb-4 outline-none"
-                    :ui="{ base: 'rounded-full' }"
-                />
+                <UFormField name="name" class="mb-4 outline-none">
+                    <UInput
+                        v-model="form.name"
+                        size="xl"
+                        icon="iconoir:user-square"
+                        placeholder="Masukkan Nama"
+                        :ui="{ base: 'rounded-full' }"
+                    />
+                </UFormField>
 
-                <UInput
-                    v-model="form.username"
-                    size="xl"
-                    icon="iconoir:user-square"
-                    placeholder="Masukkan username"
-                    class="mb-4 outline-none"
-                    :ui="{ base: 'rounded-full' }"
-                />
+                <UFormField name="username" class="mb-4 outline-none">
+                    <UInput
+                        v-model="form.username"
+                        size="xl"
+                        icon="iconoir:user-scan"
+                        placeholder="Masukkan username"
+                        :ui="{ base: 'rounded-full' }"
+                    />
+                </UFormField>
 
-                <UInput
-                    v-model="form.email"
-                    size="xl"
-                    icon="iconoir:mail"
-                    placeholder="Masukkan Email"
-                    class="mb-4 outline-none"
-                    :ui="{ base: 'rounded-full' }"
-                />
-                <UInput
-                    v-model="form.password"
-                    type="password"
-                    size="xl"
-                    icon="iconoir:lock"
-                    placeholder="Masukkan Password"
-                    class="mb-4 rounded-full"
-                    :ui="{ base: 'rounded-full' }"
-                />
+                <UFormField name="email" class="mb-4 outline-none">
+                    <UInput
+                        v-model="form.email"
+                        size="xl"
+                        icon="iconoir:mail"
+                        placeholder="Masukkan Email"
+                        :ui="{ base: 'rounded-full' }"
+                    />
+                </UFormField>
 
-                <UInput
-                    v-model="form.confirmPassword"
-                    type="password"
-                    size="xl"
-                    icon="iconoir:lock"
-                    placeholder="Konfirmasi Password"
-                    class="mb-4 rounded-full"
-                    :ui="{ base: 'rounded-full' }"
-                />
+                <UFormField name="password" class="mb-4 outline-none">
+                    <UInput
+                        v-model="form.password"
+                        :type="showPassword ? 'text' : 'password'"
+                        size="xl"
+                        icon="iconoir:lock"
+                        placeholder="Masukkan Password"
+                        :ui="{ base: 'rounded-full' }"
+                    >
+                        <template #trailing>
+                            <UButton
+                                color="neutral"
+                                variant="link"
+                                size="sm"
+                                :icon="
+                                    showPassword
+                                        ? 'i-lucide-eye-off'
+                                        : 'i-lucide-eye'
+                                "
+                                :aria-label="
+                                    showPassword
+                                        ? 'Hide password'
+                                        : 'Show password'
+                                "
+                                :aria-pressed="showPassword"
+                                aria-controls="password"
+                                @click="showPassword = !showPassword"
+                            />
+                        </template>
+                    </UInput>
+                </UFormField>
+
+                <UFormField name="confirmPassword" class="mb-4 rounded-full">
+                    <UInput
+                        v-model="form.confirmPassword"
+                        :type="showConfirmPassowrd ? 'text' : 'password'"
+                        size="xl"
+                        icon="iconoir:lock"
+                        placeholder="Konfirmasi Password"
+                        :ui="{ base: 'rounded-full' }"
+                    >
+                        <template #trailing>
+                            <UButton
+                                color="neutral"
+                                variant="link"
+                                size="sm"
+                                :icon="
+                                    showConfirmPassowrd
+                                        ? 'i-lucide-eye-off'
+                                        : 'i-lucide-eye'
+                                "
+                                :aria-label="
+                                    showConfirmPassowrd
+                                        ? 'Hide password'
+                                        : 'Show password'
+                                "
+                                :aria-pressed="showConfirmPassowrd"
+                                aria-controls="password"
+                                @click="
+                                    showConfirmPassowrd = !showConfirmPassowrd
+                                "
+                            />
+                        </template>
+                    </UInput>
+                </UFormField>
 
                 <UButton
-                    v-if="isMetaMaskSupported"
-                    @click="connect"
-                    label="Masuk"
+                    type="submit"
+                    label="Daftar"
                     variant="solid"
+                    :loading="store.isLoading('REGISTER')"
                     block
                     class="mt-5 rounded-full py-3"
                 />
@@ -136,8 +240,10 @@ onMounted(() => {
             <UButton
                 v-if="isMetaMaskSupported"
                 @click="connect"
+                :loading="store.isLoading('CONNECT_WALLET')"
                 label="Connect Wallet"
                 variant="solid"
+                icon="token-branded:metamask"
                 block
                 class="mt-5 rounded-full py-3"
             />
