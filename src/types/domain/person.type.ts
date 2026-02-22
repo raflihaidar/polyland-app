@@ -18,3 +18,10 @@ export interface PersonCreate {
   password: string;
   confirmPassword: string;
 }
+
+export interface User {
+  name: string;
+  username: string;
+  email: string;
+  roles: string[];
+}

@@ -2,16 +2,18 @@ import { createWebHistory, createRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth.store";
 
 import { guestRoutes } from "./guest.route";
+import { authRoutes } from "./auth.route";
 import { storeToRefs } from "pinia";
 
 const routes = [
   {
     path: "/",
-    name: "Dashboard",
-    component: () => import("../views/Dashboard.vue"),
+    name: "Home",
+    component: () => import("../views/Home.vue"),
     meta: { requiresAuth: true },
   },
   ...guestRoutes,
+  ...authRoutes,
 ];
 
 export const router = createRouter({

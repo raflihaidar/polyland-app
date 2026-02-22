@@ -1,14 +1,14 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useApi, useApiPrivate } from "../composables/useApi";
-import type { PersonCreate } from "../types/domain/person.type";
+import type { PersonCreate, User } from "../types/domain/person.type";
 import { walletClient } from "../lib/walletClient";
 import { signLoginMessage } from "../lib/signMessage";
 
 export const useAuthStore = defineStore(
   "auth",
   () => {
-    const user = ref<any | null>(null);
+    const user = ref<User | null>(null);
     const address = ref<string | null>(null);
     const chainId = ref<string | null>(null);
     const loadArr = ref<string[]>([]);
