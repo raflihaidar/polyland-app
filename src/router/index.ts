@@ -1,19 +1,29 @@
 import { createWebHistory, createRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth.store";
 
-import { guestRoutes } from "./guest.route";
-import { authRoutes } from "./auth.route";
+import { guestRoutes } from "./Guest.route";
+import { aktaRoutes } from "./Akta.route";
+import { cariBerkasRoutes } from "./CariBerkas.route";
+import { profilRoutes } from "./Profil.route";
+import { sertifikatRoutes } from "./Sertifikat.route";
+import { verifikasiAkunRoutes } from "./VerifikasiAkun.route";
+import {peralihanHakRoutes} from "./PeralihanHak.route"
 import { storeToRefs } from "pinia";
 
 const routes = [
   {
     path: "/",
-    name: "Home",
+    name: "home",
     component: () => import("../views/Home.vue"),
     meta: { requiresAuth: true },
   },
   ...guestRoutes,
-  ...authRoutes,
+  ...aktaRoutes,
+  ...cariBerkasRoutes,
+  ...profilRoutes,
+  ...sertifikatRoutes,
+  ...verifikasiAkunRoutes,
+  ...peralihanHakRoutes
 ];
 
 export const router = createRouter({
@@ -33,20 +43,20 @@ router.beforeResolve(async (to, from, next) => {
     await authStore.logout();
 
     return next({
-      name: "Login",
+      name: "login",
       query: { session: "expired" },
     });
   }
 
   if (to.meta.requiresAuth && !isAuthenticated.value) {
     return next({
-      name: "Login",
+      name: "login",
       query: { redirect: to.fullPath },
     });
   }
 
   if (!to.meta.requiresAuth && isAuthenticated.value) {
-    return next({ name: "Dashboard" });
+    return next({ name: "home" });
   }
 
   return next();

@@ -2,7 +2,8 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useApi, useApiPrivate } from "../composables/useApi";
 import type { PersonCreate, User } from "../types/domain/person.type";
-import { walletClient } from "../lib/walletClient";
+// import { walletClient } from "../lib/walletClient";
+// import { ethereum } from "@/lib/metamaskSDK";
 import { signLoginMessage } from "../lib/signMessage";
 
 export const useAuthStore = defineStore(
@@ -126,11 +127,19 @@ export const useAuthStore = defineStore(
       return data;
     };
 
-    const connectMetaMask = async () => {
+    const connectMetaMask = async (provider : any) => {
       try {
         startLoading("CONNECT_WALLET");
-        const addresses = await walletClient.requestAddresses();
-        const walletAddress = addresses[0];
+
+        if (!provider) {
+          throw new Error("MetaMask provider tidak ditemukan");
+        }
+
+        const addresses = (await provider.request({
+          method: 'eth_requestAccounts'
+        })) as string[];
+
+        const walletAddress = addresses?.[0];
 
         if (!walletAddress) {
           throw new Error("Wallet not connected");
@@ -147,17 +156,16 @@ export const useAuthStore = defineStore(
           message: data.message,
         };
       } catch (err: any) {
-        console.log(err);
-        // return {
-        //   status: err.response.data.status || "error",
-        //   message:
-        //     err.response.data.message ||
-        //     "Terjadi kesalahan saat terhubung ke wallet, silahkan coba lagi",
-        // };
+        console.error(err);
+        return {
+          status: "error",
+          message: "Gagal login dengan Metamask",
+        };
       } finally {
         stopLoading("CONNECT_WALLET");
       }
     };
+
 
     return {
       user,

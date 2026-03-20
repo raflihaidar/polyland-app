@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "../stores/auth.store";
-import PublicationButton from "../components/PublicationButton.vue";
+import PublicationButton from "../components/PayableButton.vue";
 
 const store = useAuthStore();
 const { address } = storeToRefs(store);

@@ -1,39 +1,17 @@
 [
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_token",
-                "type": "address"
-            }
-        ],
+        "inputs": [],
         "stateMutability": "nonpayable",
         "type": "constructor"
-    },
-    {
-        "inputs": [],
-        "name": "ReentrancyGuardReentrantCall",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "token",
-                "type": "address"
-            }
-        ],
-        "name": "SafeERC20FailedOperation",
-        "type": "error"
     },
     {
         "anonymous": false,
         "inputs": [
             {
                 "indexed": false,
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "kantahCode",
-                "type": "bytes32"
+                "type": "string"
             },
             {
                 "indexed": false,
@@ -56,15 +34,15 @@
         "inputs": [
             {
                 "indexed": true,
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "applicationId",
-                "type": "bytes32"
+                "type": "string"
             },
             {
                 "indexed": false,
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "kantahCode",
-                "type": "bytes32"
+                "type": "string"
             },
             {
                 "indexed": true,
@@ -75,7 +53,19 @@
             {
                 "indexed": false,
                 "internalType": "uint256",
+                "name": "area",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
                 "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "timestamp",
                 "type": "uint256"
             }
         ],
@@ -83,36 +73,11 @@
         "type": "event"
     },
     {
-        "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "applicationId",
-                "type": "bytes32"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "Refunded",
-        "type": "event"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "kantahCode",
-                "type": "bytes32"
+                "type": "string"
             },
             {
                 "internalType": "uint256",
@@ -134,9 +99,9 @@
     {
         "inputs": [
             {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "applicationId",
-                "type": "bytes32"
+                "type": "string"
             }
         ],
         "name": "getPaymentInfo",
@@ -149,9 +114,9 @@
                         "type": "address"
                     },
                     {
-                        "internalType": "bytes32",
+                        "internalType": "string",
                         "name": "kantahCode",
-                        "type": "bytes32"
+                        "type": "string"
                     },
                     {
                         "internalType": "uint256",
@@ -167,11 +132,6 @@
                         "internalType": "uint256",
                         "name": "timestamp",
                         "type": "uint256"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "refunded",
-                        "type": "bool"
                     }
                 ],
                 "internalType": "struct ApplicationPayment.PaymentInfo",
@@ -185,9 +145,9 @@
     {
         "inputs": [
             {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "applicationId",
-                "type": "bytes32"
+                "type": "string"
             }
         ],
         "name": "isPaid",
@@ -204,9 +164,9 @@
     {
         "inputs": [
             {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "",
-                "type": "bytes32"
+                "type": "string"
             }
         ],
         "name": "kantahFees",
@@ -246,14 +206,14 @@
     {
         "inputs": [
             {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "applicationId",
-                "type": "bytes32"
+                "type": "string"
             },
             {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "kantahCode",
-                "type": "bytes32"
+                "type": "string"
             },
             {
                 "internalType": "uint256",
@@ -263,15 +223,15 @@
         ],
         "name": "pay",
         "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "payable",
         "type": "function"
     },
     {
         "inputs": [
             {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "",
-                "type": "bytes32"
+                "type": "string"
             }
         ],
         "name": "payments",
@@ -282,9 +242,9 @@
                 "type": "address"
             },
             {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "kantahCode",
-                "type": "bytes32"
+                "type": "string"
             },
             {
                 "internalType": "uint256",
@@ -300,11 +260,6 @@
                 "internalType": "uint256",
                 "name": "timestamp",
                 "type": "uint256"
-            },
-            {
-                "internalType": "bool",
-                "name": "refunded",
-                "type": "bool"
             }
         ],
         "stateMutability": "view",
@@ -313,22 +268,9 @@
     {
         "inputs": [
             {
-                "internalType": "bytes32",
-                "name": "applicationId",
-                "type": "bytes32"
-            }
-        ],
-        "name": "refund",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
+                "internalType": "string",
                 "name": "kantahCode",
-                "type": "bytes32"
+                "type": "string"
             },
             {
                 "internalType": "uint256",
@@ -348,38 +290,6 @@
     },
     {
         "inputs": [],
-        "name": "token",
-        "outputs": [
-            {
-                "internalType": "contract IERC20",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "tokenDecimals",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
         "name": "withdraw",
         "outputs": [],
         "stateMutability": "nonpayable",

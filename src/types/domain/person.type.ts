@@ -23,5 +23,11 @@ export interface User {
   name: string;
   username: string;
   email: string;
+  isVerified : boolean,
   roles: string[];
+}
+
+export interface Officer {
+  id?: string;
+  name?: string;
 }

@@ -4,6 +4,7 @@ import { useAuthStore } from "../stores/auth.store";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import type { FormSubmitEvent } from "@nuxt/ui";
+import { MetaMaskSDK } from "@metamask/sdk"
 import * as z from "zod";
 
 const error = ref<string | null>(null);
@@ -26,6 +27,23 @@ const schema = z.object({
 });
 type Schema = z.output<typeof schema>;
 
+const mmsdk = new MetaMaskSDK({
+  dappMetadata: {
+    name: "Jejak Tanahku",
+    url: window.location.href,
+  }
+});
+
+const getProvider = async () => {
+  if (typeof window !== "undefined" && window.ethereum) {
+    return window.ethereum;
+  }
+
+  // fallback ke SDK (mobile / PWA)
+  await mmsdk.connect();
+  return mmsdk.getProvider();
+};
+
 const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
     const { status, message } = await store.login(event.data);
     alert.value = {
@@ -37,7 +55,13 @@ const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
 };
 
 const connect = async (): Promise<void> => {
-    await store.connectMetaMask();
+    const provider = await getProvider();
+    const {status, message } = await store.connectMetaMask(provider);
+
+    alert.value = {
+        show: status === "error" ? true : false,
+        message,
+    };
 
     if (isAuthenticated) router.push("/");
 };

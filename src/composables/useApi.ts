@@ -17,22 +17,25 @@ export function useApiPrivate() {
   );
 
   axiosPrivateInstance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-        try {
-          await store.refresh();
-          axiosPrivateInstance(originalRequest);
-        } catch (error: unknown) {
-          user.value = null;
-          router.push("/login");
-          return Promise.reject(error);
-        }
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest?._retry) {
+      originalRequest._retry = true;
+      try {
+        await store.refresh();
+        return axiosPrivateInstance(originalRequest);
+      } catch (err) {
+        user.value = null;
+        router.push("/login");
+        return Promise.reject(err);
       }
-    },
-  );
+    }
+
+    return Promise.reject(error);
+  },
+);
 
   return axiosPrivateInstance;
 }

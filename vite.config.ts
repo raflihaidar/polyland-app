@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import ui from "@nuxt/ui/vite";
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -55,5 +56,10 @@ export default defineConfig({
   ],
   define: {
     global: "globalThis",
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
   },
 });

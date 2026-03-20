@@ -9,15 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@metamask/sdk": "^0.34.0",
     "@nuxt/ui": "^4.4.0",
     "@tailwindcss/vite": "^4.1.17",
+    "@vueuse/core": "^14.2.1",
     "@wagmi/vue": "^0.4.1",
     "@web3auth/modal": "^10.8.0",
     "axios": "^1.13.4",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "tailwindcss": "^4.1.17",
-    "viem": "^2.39.3",
+    "viem": "^2.45.1",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
     "zod": "^4.3.6"
