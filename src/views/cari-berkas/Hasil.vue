@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { provide, computed, ref, onMounted } from 'vue'
+import { provide, computed, ref } from 'vue'
 import MobileLayout from '@/layouts/mobile.vue'
-import { useAuthStore } from "@/stores/auth.store";
 import { useApplicationStore } from '@/stores/application.store'
-import { createPublicClient, createWalletClient, custom, stringToHex, parseUnits, pad, http, parseGwei } from "viem";
+import { createPublicClient, createWalletClient, custom, parseUnits, http, parseGwei } from "viem";
 import { polygonAmoy } from "viem/chains";
 import PaymentABI from "../../abi/applicationPayment.json"
 import ERC20ABI from "../../abi/erc20.json"
@@ -20,10 +19,6 @@ provide("head-title", `${route.params?.fileNumber}`)
 
 const store = useApplicationStore()
 const { detailBerkas } = storeToRefs(store)
-
-const authStore = useAuthStore();
-const { address } = storeToRefs(authStore);
-
 
 const txHash = ref("");
 const error = ref("");
@@ -51,9 +46,6 @@ const handlePayment = async () => {
   try {
     loading.value = true;
     error.value = "";
-
-    console.log("usdc address : ", usdcAddress)
-    console.log("payment address : ", paymentContractAddress)
 
     // 1. Inisialisasi Public Client untuk cek status transaksi
     const publicClient = createPublicClient({

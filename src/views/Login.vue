@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useAuthStore } from "../stores/auth.store";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
@@ -65,6 +65,11 @@ const connect = async (): Promise<void> => {
 
     if (isAuthenticated) router.push("/");
 };
+
+
+onMounted(() => {
+    console.log("hey")
+})
 </script>
 
 <template>
