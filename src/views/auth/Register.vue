@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAuthStore } from "../stores/auth.store";
+import { useAuthStore } from "../../stores/auth.store";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { MetaMaskSDK } from "@metamask/sdk"
@@ -142,6 +142,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
                         size="xl"
                         icon="iconoir:user-square"
                         placeholder="Masukkan Nama"
+                        class="w-full"
                         :ui="{ base: 'rounded-full' }"
                     />
                 </UFormField>
@@ -152,6 +153,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
                         size="xl"
                         icon="iconoir:user-scan"
                         placeholder="Masukkan username"
+                        class="w-full"
                         :ui="{ base: 'rounded-full' }"
                     />
                 </UFormField>
@@ -162,6 +164,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
                         size="xl"
                         icon="iconoir:mail"
                         placeholder="Masukkan Email"
+                        class="w-full"
                         :ui="{ base: 'rounded-full' }"
                     />
                 </UFormField>
@@ -173,6 +176,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
                         size="xl"
                         icon="iconoir:lock"
                         placeholder="Masukkan Password"
+                        class="w-full"
                         :ui="{ base: 'rounded-full' }"
                     >
                         <template #trailing>
@@ -205,6 +209,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
                         size="xl"
                         icon="iconoir:lock"
                         placeholder="Konfirmasi Password"
+                        class="w-full"
                         :ui="{ base: 'rounded-full' }"
                     >
                         <template #trailing>

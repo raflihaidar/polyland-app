@@ -26,6 +26,8 @@ export const useAccountStore = defineStore(
         startLoading("CHECK_ACCOUNT");
         const { data } = await useApiPrivate().get("/verification-account/check-account");
         isAccountVerified.value = data.data
+
+        console.log("is verify : ", isAccountVerified.value)
         return {
           status: data.data,
           message: data.message,

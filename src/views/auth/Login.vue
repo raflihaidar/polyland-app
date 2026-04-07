@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { useAuthStore } from "../stores/auth.store";
+import { useAuthStore } from "../../stores/auth.store";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import type { FormSubmitEvent } from "@nuxt/ui";
@@ -101,7 +101,7 @@ onMounted(() => {
                         size="xl"
                         icon="iconoir:mail"
                         placeholder="Masukkan Email"
-                        class="rounded-full"
+                        class="rounded-full w-full"
                         :ui="{ base: 'rounded-full' }"
                     />
                 </UFormField>
@@ -112,7 +112,7 @@ onMounted(() => {
                         size="xl"
                         icon="iconoir:lock"
                         placeholder="Masukkan Password"
-                        class="rounded-full"
+                        class="rounded-full w-full"
                         :ui="{ base: 'rounded-full' }"
                     >
                         <template #trailing>

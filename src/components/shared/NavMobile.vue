@@ -5,18 +5,14 @@ import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
 
-const navigationItem = ref<
-  { name: string; icon: string; slug: string }[]
->([
+const navigationItem = ref<{ name: string; icon: string; slug: string }[]>([
   { name: "Beranda", icon: "ri:home-3-fill", slug: "home" },
-  { name: "Aktaku", icon: "ri:folder-shield-line", slug: "aktaku" },
   { name: "Scan Dokumen", icon: "ri:qr-scan-2-line", slug: "scan-qr" },
-  { name: "Sertifikatku", icon: "ri:file-list-2-line", slug: "sertifikatku" },
-  { name: "Profil", icon: "ri:user-3-line", slug: "profil" }
+  { name: "Profil", icon: "ri:user-3-line", slug: "profil" },
 ]);
 
 const scanDokumenClass =
-  "absolute -translate-y-1/2 -translate-x-1/2 left-1/2 -top-[90%] size-10 bg-primary text-white rounded-xl p-1";
+  "absolute -translate-y-[100%] -translate-x-1/2 left-1/2 top-[60%] size-10 bg-primary text-white rounded-xl p-1";
 
 const navigate = (slug: string) => {
   router.push({ name: slug });
@@ -25,33 +21,28 @@ const navigate = (slug: string) => {
 
 <template>
   <div
-    class="w-full flex items-center gap-x-2 fixed bottom-0 p-5 bg-white shadow-xs"
+    class="fixed bottom-0 left-0 w-full flex items-center gap-x-2 px-5 py-3 bg-white shadow-xs"
   >
     <ul
       v-for="(item, index) in navigationItem"
       :key="index"
-      class="w-full"
+      class="w-full relative"
     >
       <li
-        class="w-full text-center relative cursor-pointer"
-        :class="[
-          route.name === item.slug ? 'text-primary font-medium' : '',
-        ]"
+        class="w-full text-center cursor-pointer flex flex-col items-center"
+        :class="[route.name === item.slug ? 'text-primary font-medium' : '']"
         @click="navigate(item.slug)"
       >
-        <UIcon
-          :name="item.icon"
-          class="mx-auto"
-          :class="[
-            item.name === 'Scan Dokumen'
-              ? scanDokumenClass
-              : 'size-7',
-          ]"
-        />
-        <p
-          class="text-xs"
-          :class="[item.name === 'Scan Dokumen' ? 'mt-5' : 'mt-2']"
-        >
+        <!-- wrapper icon -->
+        <div class="relative h-10 flex items-center justify-center">
+          <UIcon
+            :name="item.icon"
+            :class="item.name === 'Scan Dokumen' ? scanDokumenClass : 'size-7'"
+          />
+        </div>
+
+        <!-- label -->
+        <p class="text-xs mt-2 font-semibold">
           {{ item.name }}
         </p>
       </li>
