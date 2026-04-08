@@ -69,19 +69,21 @@ const handlePayment = async () => {
     // 1. APPROVE
     // ======================
     // Gunakan writeContract dan tunggu sampai transaksi sukses
+
+    const fees = await publicClient.estimateFeesPerGas();
+
     const approveHash = await walletClient.writeContract({
       account,
       address: usdcAddress,
       abi: ERC20ABI,
       functionName: "approve",
       args: [paymentContractAddress, amount],
+      maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
+      maxFeePerGas: fees.maxFeePerGas,
     });
 
     // TUNGGU konfirmasi transaksi approve sebelum lanjut ke pay
     await publicClient.waitForTransactionReceipt({ hash: approveHash });
-
-    console.log("lanjut membayar")
-
 
     // estimate gas
     const gas = await publicClient.estimateContractGas({

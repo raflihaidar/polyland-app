@@ -4,7 +4,7 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import "./style.css";
 import ui from "@nuxt/ui/vue-plugin";
 import App from "./App.vue";
-import { router } from "./router"; 
+import { router } from "./router/index.ts"; 
 
 
 const pinia = createPinia();

@@ -165,11 +165,17 @@ onMounted(async () => {
         <template #body>
           <div>
             <h3>
-              Untuk menggunakan layanan ini, silakan lakukan verifikasi akun
-              terlebih dahulu agar dapat melanjutkan proses.
+              {{
+                isAccountVerified === 'not found'
+                  ? 'Untuk menggunakan layanan ini, silakan lakukan verifikasi akun terlebih dahulu agar dapat melanjutkan proses.'
+                  : 'Akun Anda sedang dalam proses verifikasi. Silakan menunggu hingga proses verifikasi selesai.'
+              }}
             </h3>
           </div>
-          <div class="flex gap-3 mt-4">
+          <div 
+            v-if="isAccountVerified === 'not found'"
+            class="flex gap-3 mt-4"
+            >
             <UButton
               label="Nanti Dulu"
               color="secondary"
