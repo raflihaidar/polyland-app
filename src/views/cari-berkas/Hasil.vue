@@ -1,24 +1,30 @@
 <script setup lang="ts">
-import { provide, computed, ref } from 'vue'
-import MobileLayout from '@/layouts/mobile.vue'
-import { useApplicationStore } from '@/stores/application.store'
-import { createPublicClient, createWalletClient, custom, parseUnits, http, parseGwei } from "viem";
+import { provide, computed, ref } from "vue";
+import MobileLayout from "@/layouts/mobile.vue";
+import { useApplicationStore } from "@/stores/application.store";
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  parseUnits,
+  http,
+  parseGwei,
+} from "viem";
 import { polygonAmoy } from "viem/chains";
-import PaymentABI from "../../abi/applicationPayment.json"
-import ERC20ABI from "../../abi/erc20.json"
-import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import PaymentABI from "../../abi/applicationPayment.json";
+import ERC20ABI from "../../abi/erc20.json";
+import { storeToRefs } from "pinia";
+import { useRoute } from "vue-router";
 
 const paymentContractAddress = import.meta.env.VITE_PAYMENT_CONTRACT_ADDRESS_V4;
 const usdcAddress = import.meta.env.VITE_USDC_ADDRESS;
 
+const route = useRoute();
 
-const route = useRoute()
+provide("head-title", `${route.query?.fileNumber}`);
 
-provide("head-title", `${route.params?.fileNumber}`)
-
-const store = useApplicationStore()
-const { detailBerkas } = storeToRefs(store)
+const store = useApplicationStore();
+const { detailBerkas } = storeToRefs(store);
 
 const txHash = ref("");
 const error = ref("");
@@ -30,16 +36,22 @@ const statusBerkasMapping = [
   { value: "MENUNGGU_PEMBAYARAN", label: "Menunggu Pembayaran" },
   { value: "PENANDATANGANAN", label: "Menunggu Penandatanganan Dokumen" },
   { value: "DITOLAK", label: "Pengajuan Ditolak" },
-  { value: "SELESAI", label: "Proses Selesai" }
-]
+  { value: "SELESAI", label: "Proses Selesai" },
+];
 
 function toBytes32(str: string) {
-  const encoder = new TextEncoder()
-  const bytes = encoder.encode(str)
-  if (bytes.length > 32) throw new Error("String terlalu panjang untuk bytes32")
-  const padded = new Uint8Array(32)
-  padded.set(bytes)
-  return '0x' + Array.from(padded).map(b => b.toString(16).padStart(2, '0')).join('')
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+  if (bytes.length > 32)
+    throw new Error("String terlalu panjang untuk bytes32");
+  const padded = new Uint8Array(32);
+  padded.set(bytes);
+  return (
+    "0x" +
+    Array.from(padded)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+  );
 }
 
 const handlePayment = async () => {
@@ -61,8 +73,8 @@ const handlePayment = async () => {
     const [account] = await walletClient.requestAddresses();
 
     // Persiapan data
-    const applicationIdBytes32 = toBytes32(detailBerkas.value?.file_number!)
-    const kantahCodeBytes32 = toBytes32(detailBerkas.value?.landOffice.code!)
+    const applicationIdBytes32 = toBytes32(detailBerkas.value?.file_number!);
+    const kantahCodeBytes32 = toBytes32(detailBerkas.value?.landOffice.code!);
     const amount = parseUnits(String(detailBerkas.value?.total_fee), 6);
 
     // ======================
@@ -94,9 +106,9 @@ const handlePayment = async () => {
       args: [
         applicationIdBytes32,
         kantahCodeBytes32,
-        BigInt(detailBerkas.value?.land.area_size!)
-      ]
-    })
+        BigInt(detailBerkas.value?.land.area_size!),
+      ],
+    });
 
     // ======================
     // 2. PAY
@@ -109,7 +121,7 @@ const handlePayment = async () => {
       args: [
         applicationIdBytes32,
         kantahCodeBytes32,
-        BigInt(detailBerkas.value?.land.area_size!)
+        BigInt(detailBerkas.value?.land.area_size!),
       ],
       gas,
       maxFeePerGas: parseGwei("40"),
@@ -118,7 +130,6 @@ const handlePayment = async () => {
 
     txHash.value = payHash;
     alert("Pembayaran Berhasil!");
-
   } catch (err: any) {
     console.error(err);
     error.value = err.shortMessage || err.message || "User rejected request";
@@ -128,46 +139,48 @@ const handlePayment = async () => {
 };
 
 const statusBerkasLookup = computed(() => {
-  return Object.fromEntries(statusBerkasMapping.map(s => [s.value, s.label]))
-})
+  return Object.fromEntries(statusBerkasMapping.map((s) => [s.value, s.label]));
+});
 
 const statusLabel = computed(() => {
   return detailBerkas.value
     ? statusBerkasLookup.value[detailBerkas.value.status] || "Unknown"
-    : "Memuat..."
-})
+    : "Memuat...";
+});
 
 const statusColor = computed(() => {
-  const status = detailBerkas.value?.status
+  const status = detailBerkas.value?.status;
 
-  if (status === "MENUNGGU_PEMBAYARAN") return "text-yellow-600"
-  if (status === "DITOLAK") return "text-red-600"
-  if (status === "SELESAI") return "text-green-600"
+  if (status === "MENUNGGU_PEMBAYARAN") return "text-yellow-600";
+  if (status === "DITOLAK") return "text-red-600";
+  if (status === "SELESAI") return "text-green-600";
 
-  return "text-blue-600"
-})
+  return "text-blue-600";
+});
 
 const showPaymentButton = computed(() => {
-  return detailBerkas.value?.status === "MENUNGGU_PEMBAYARAN"
-})
+  return detailBerkas.value?.status === "MENUNGGU_PEMBAYARAN";
+});
 
 const formatRupiah = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
-    minimumFractionDigits: 0
-  }).format(value || 0)
-}
+    minimumFractionDigits: 0,
+  }).format(value || 0);
+};
 </script>
 
 <template>
   <MobileLayout>
     <section v-if="detailBerkas" class="p-2">
-
       <!-- Header -->
       <section class="w-full flex justify-between items-start flex-col">
         <p class="font-bold text-lg">Peralihan Hak Jual Beli</p>
-        <p :class="['font-semibold', 'text-sm', statusColor]" class="text-nowrap">
+        <p
+          :class="['font-semibold', 'text-sm', statusColor]"
+          class="text-nowrap"
+        >
           {{ statusLabel }}
         </p>
       </section>
@@ -197,7 +210,12 @@ const formatRupiah = (value: number) => {
 
       <!-- Tombol Pembayaran -->
       <section v-if="showPaymentButton" class="mt-5">
-        <UButton block :loading="loading" label="Bayar Sekarang" @click="handlePayment" />
+        <UButton
+          block
+          :loading="loading"
+          label="Bayar Sekarang"
+          @click="handlePayment"
+        />
       </section>
 
       <!-- Pemohon -->
@@ -231,7 +249,6 @@ const formatRupiah = (value: number) => {
           </p>
         </div>
       </section>
-
     </section>
   </MobileLayout>
 </template>

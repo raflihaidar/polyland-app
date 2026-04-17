@@ -6,7 +6,7 @@ export const cariBerkasRoutes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/cari-berkas/hasil/:fileNumber",
+    path: "/cari-berkas/hasil",
     name: "hasil cari berkas",
     component: () => import("../views/cari-berkas/Hasil.vue"),
     meta: { requiresAuth: true },
