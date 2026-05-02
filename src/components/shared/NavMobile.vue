@@ -21,7 +21,7 @@ const navigate = (slug: string) => {
 
 <template>
   <div
-    class="fixed bottom-0 left-0 w-full flex items-center gap-x-2 px-5 py-3 bg-white shadow-xs"
+    class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md h-16 max-h-16 flex justify-between items-center gap-x-2 px-5 py-3 bg-white shadow-xs"
   >
     <ul
       v-for="(item, index) in navigationItem"

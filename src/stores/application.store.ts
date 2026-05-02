@@ -1,10 +1,8 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
-import { useApi, useApiPrivate } from "@/composables/useApi";
-import type { PersonCreate, User } from "@/types";
-import { walletClient } from "../lib/walletClient";
-import { signLoginMessage } from "../lib/signMessage";
-import type { ApplicationCreate, ApplicationData } from "@/types";
+import { ref } from "vue";
+import { useApiPrivate } from "@/composables/useApi";
+import type { User } from "@/types";
+import type { ApplicationData } from "@/types";
 
 export const useApplicationStore = defineStore("application", () => {
   const applicationList = ref<User | null>(null);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import MobileLayout from "@/layouts/mobile.vue";
+import MobileLayout from "@/layouts/Mobile.vue";
 import { useAuthStore } from "@/stores/auth.store";
 import { useRouter } from "vue-router";
 import type { ButtonProps } from "@nuxt/ui";
@@ -124,7 +124,10 @@ onMounted(async () => {
         <div class="mt-10">
           <h3 class="font-medium">Laci</h3>
           <div class="mt-5 grid grid-cols-4 gap-x-5">
-            <div class="w-full text-center">
+            <div
+              class="w-full text-center"
+              @click.stop="handleClickMenu('/sertifikatku')"
+            >
               <div
                 class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"
               >
@@ -166,16 +169,13 @@ onMounted(async () => {
           <div>
             <h3>
               {{
-                isAccountVerified === 'not found'
-                  ? 'Untuk menggunakan layanan ini, silakan lakukan verifikasi akun terlebih dahulu agar dapat melanjutkan proses.'
-                  : 'Akun Anda sedang dalam proses verifikasi. Silakan menunggu hingga proses verifikasi selesai.'
+                isAccountVerified === "not found"
+                  ? "Untuk menggunakan layanan ini, silakan lakukan verifikasi akun terlebih dahulu agar dapat melanjutkan proses."
+                  : "Akun Anda sedang dalam proses verifikasi. Silakan menunggu hingga proses verifikasi selesai."
               }}
             </h3>
           </div>
-          <div 
-            v-if="isAccountVerified === 'not found'"
-            class="flex gap-3 mt-4"
-            >
+          <div v-if="isAccountVerified === 'not found'" class="flex gap-3 mt-4">
             <UButton
               label="Nanti Dulu"
               color="secondary"

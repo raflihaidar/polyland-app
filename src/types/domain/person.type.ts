@@ -17,13 +17,14 @@ export interface PersonCreate {
   email: string;
   password: string;
   confirmPassword: string;
+  publicKey: string;
 }
 
 export interface User {
   name: string;
   username: string;
   email: string;
-  isVerified : boolean,
+  isVerified: boolean;
   roles: string[];
 }
 

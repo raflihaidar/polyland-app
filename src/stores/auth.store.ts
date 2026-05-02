@@ -32,7 +32,7 @@ export const useAuthStore = defineStore(
       get() {
         return user.value !== null;
       },
-      set(newValue: string) {
+      set(newValue: User) {
         user.value = newValue;
       },
     });
@@ -127,7 +127,7 @@ export const useAuthStore = defineStore(
       return data;
     };
 
-    const connectMetaMask = async (provider : any) => {
+    const connectMetaMask = async (provider: any) => {
       try {
         startLoading("CONNECT_WALLET");
 
@@ -136,7 +136,7 @@ export const useAuthStore = defineStore(
         }
 
         const addresses = (await provider.request({
-          method: 'eth_requestAccounts'
+          method: "eth_requestAccounts",
         })) as string[];
 
         const walletAddress = addresses?.[0];
@@ -165,7 +165,6 @@ export const useAuthStore = defineStore(
         stopLoading("CONNECT_WALLET");
       }
     };
-
 
     return {
       user,

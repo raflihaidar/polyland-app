@@ -23,6 +23,7 @@ declare module 'vue' {
     SwitchNetwork: typeof import('./src/components/SwitchNetwork.vue')['default']
     UAlert: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Alert.vue')['default']
     UApp: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/App.vue')['default']
+    UAvatar: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Avatar.vue')['default']
     UBadge: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Badge.vue')['default']
     UBanner: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Banner.vue')['default']
     UButton: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
@@ -40,10 +41,13 @@ declare module 'vue' {
     ULink: typeof import('./node_modules/@nuxt/ui/dist/runtime/vue/overrides/vue-router/Link.vue')['default']
     UModal: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
     UNavigationMenu: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/NavigationMenu.vue')['default']
+    UPageCard: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/PageCard.vue')['default']
+    UPageList: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/PageList.vue')['default']
     UPopover: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Popover.vue')['default']
     USelect: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
     UStepper: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Stepper.vue')['default']
     UTextarea: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Textarea.vue')['default']
     UTooltip: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Tooltip.vue')['default']
+    UUser: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/User.vue')['default']
   }
 }

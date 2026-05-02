@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { provide, computed, ref } from "vue";
-import MobileLayout from "@/layouts/mobile.vue";
+import MobileLayout from "@/layouts/Mobile.vue";
 import { useApplicationStore } from "@/stores/application.store";
 import {
   createPublicClient,
