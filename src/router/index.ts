@@ -7,7 +7,7 @@ import { cariBerkasRoutes } from "./CariBerkas.route";
 import { profilRoutes } from "./Profil.route";
 import { sertifikatRoutes } from "./Sertifikat.route";
 import { verifikasiAkunRoutes } from "./VerifikasiAkun.route";
-import { peralihanHakRoutes } from "./PeralihanHak.route";
+import { antrianOnlineRoutes } from "./AntrianOnline.route";
 import { storeToRefs } from "pinia";
 
 const routes = [
@@ -23,7 +23,7 @@ const routes = [
   ...profilRoutes,
   ...sertifikatRoutes,
   ...verifikasiAkunRoutes,
-  ...peralihanHakRoutes,
+  ...antrianOnlineRoutes,
 ];
 
 export const router = createRouter({

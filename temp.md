@@ -159,55 +159,6 @@ onMounted(() => {
   width: 100%;
 }
 
-.zoom-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 8px;
-  margin-top: 2px;
-}
-
-.zoom-btn {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s;
-}
-
-.zoom-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.zoom-btn:not(:disabled):active {
-  background-color: #f3f4f6;
-}
-
-.zoom-info {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  min-width: 45px;
-  text-align: center;
-}
-
-.detail-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 .cert-header {
   padding: 4px 0;
 }

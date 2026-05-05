@@ -66,7 +66,6 @@ onMounted(async () => {
 
       <!-- BANNER -->
       <div class="bg-white shadow-sm p-5 rounded-xl text-text">
-        <p class="text-sm">Selamat pagi,</p>
         <p
           :class="
             user &&
@@ -79,6 +78,18 @@ onMounted(async () => {
         >
           {{ user?.name || user?.username }}
         </p>
+        <section class="flex items-center gap-x-1">
+          <UIcon
+            :name="
+              user && user.isVerified
+                ? 'ri:verified-badge-fill'
+                : 'ri:close-circle-fill'
+            "
+            class="size-4"
+            :class="user && user.isVerified ? 'text-success' : 'text-danger'"
+          />
+          <p class="text-xs text-medium">Perorangan</p>
+        </section>
       </div>
 
       <UModal
@@ -91,7 +102,7 @@ onMounted(async () => {
           <div class="mt-5 grid grid-cols-4 gap-x-5">
             <div
               class="w-full text-center"
-              @click.stop="handleClickMenu('/peralihan-hak')"
+              @click.stop="handleClickMenu('antrian-online')"
             >
               <div
                 class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"
@@ -101,7 +112,7 @@ onMounted(async () => {
                   class="size-7 text-primary"
                 />
               </div>
-              <p class="text-xs font-medium">Peralihan Hak</p>
+              <p class="text-xs font-medium">Antrian Online</p>
             </div>
             <div
               class="w-full text-center"

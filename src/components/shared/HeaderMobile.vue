@@ -18,7 +18,7 @@ const isMainPage = computed(() => {
     v-if="route.name === 'home'"
     class="w-full bg-white left-1/2 transform -translate-x-1/2 max-w-md h-16 max-h-16 flex z-50 justify-between items-center p-5 fixed top-0 shadow-xs"
   >
-    <h1>Jejak Tanahku</h1>
+    <h1 class="font-semibold">Jejak Tanahku</h1>
     <UIcon name="iconoir:bell" class="size-6" />
   </header>
   <header

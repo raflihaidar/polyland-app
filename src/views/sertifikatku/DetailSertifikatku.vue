@@ -20,10 +20,11 @@ const certificate = ref<null | any>(null);
 const pdfUrl = ref<string | null>(null);
 const totalPages = ref<number>(0);
 const currentPage = ref<number>(1);
-const pdfWidth = ref(0);
 const isDecrypting = ref(false);
 const isLoading = ref(false);
 const pdfContainer = ref<HTMLElement | null>(null);
+const baseWidth = ref(0);
+const scale = ref(1.0);
 
 if (typeof window !== "undefined" && !(window as any).Buffer) {
   (window as any).Buffer = Buffer;
@@ -31,9 +32,9 @@ if (typeof window !== "undefined" && !(window as any).Buffer) {
 
 const updateWidth = () => {
   if (pdfContainer.value) {
-    pdfWidth.value = pdfContainer.value.clientWidth;
+    baseWidth.value = pdfContainer.value.clientWidth;
   } else {
-    pdfWidth.value = window.innerWidth - 32;
+    baseWidth.value = window.innerWidth - 32;
   }
 };
 
@@ -140,6 +141,22 @@ const goToNextPage = () => {
   }
 };
 
+const zoomIn = () => {
+  if (scale.value < 2.5) {
+    isLoading.value = true;
+    scale.value = parseFloat((scale.value + 0.2).toFixed(1));
+  }
+};
+
+const zoomOut = () => {
+  if (scale.value > 1.0) {
+    isLoading.value = true;
+    scale.value = parseFloat((scale.value - 0.2).toFixed(1));
+  }
+};
+
+const computedWidth = computed(() => baseWidth.value * scale.value);
+
 const isLastPage = computed(() => currentPage.value === totalPages.value);
 
 onMounted(async () => {
@@ -149,6 +166,10 @@ onMounted(async () => {
     );
     certificate.value = res.data;
   }
+
+  nextTick(() => {
+    updateWidth();
+  });
 
   window.addEventListener("resize", updateWidth);
   window.addEventListener("orientationchange", () => {
@@ -180,66 +201,65 @@ onMounted(async () => {
 
       <!-- PDF Viewer -->
       <div v-if="pdfUrl" class="pdf-section">
-        <!-- Navigasi Atas -->
-        <div class="page-nav">
-          <button
-            class="nav-btn"
-            :disabled="currentPage === 1"
-            @click="goToPrevPage"
-          >
-            ‹ Prev
-          </button>
-          <span class="page-info"
-            >Hal {{ currentPage }} / {{ totalPages }}</span
-          >
-          <button
-            class="nav-btn"
-            :disabled="currentPage === totalPages"
-            @click="goToNextPage"
-          >
-            Next ›
-          </button>
-        </div>
+        <!-- Navigasi Halaman dan Fitur Zoom -->
+        <div class="controls-wrapper">
+          <div class="page-nav">
+            <button
+              class="nav-btn"
+              :disabled="currentPage === 1"
+              @click="goToPrevPage"
+            >
+              ‹ Prev
+            </button>
+            <span class="page-info"
+              >Hal {{ currentPage }} / {{ totalPages }}</span
+            >
+            <button
+              class="nav-btn"
+              :disabled="currentPage === totalPages"
+              @click="goToNextPage"
+            >
+              Next ›
+            </button>
+          </div>
 
-        <!-- PDF Canvas — ref di sini untuk ukur width tepat -->
-        <div class="pdf-wrapper" ref="pdfContainer">
-          <div v-if="isLoading" class="pdf-loading">Memuat halaman...</div>
-
-          <vue-pdf-embed
-            :source="pdfUrl"
-            :page="currentPage"
-            :width="pdfWidth"
-            @loaded="handleDocumentLoad"
-            @rendered="handleDocumentRendered"
-          />
-
-          <!-- QR hanya di halaman terakhir -->
-          <div v-if="isLastPage && totalPages > 1" class="qr-overlay">
-            <qrcode-vue
-              :value="`https://jejak-tanahku.id/verify/${certificate?.tokenId}`"
-              :size="70"
-              level="H"
-            />
-            <span class="qr-label">Verifikasi</span>
+          <!-- Tombol Zoom In & Out -->
+          <div class="zoom-controls">
+            <button class="zoom-btn" :disabled="scale <= 1.0" @click="zoomOut">
+              ➖
+            </button>
+            <span class="zoom-info">{{ Math.round(scale * 100) }}%</span>
+            <button class="zoom-btn" :disabled="scale >= 2.5" @click="zoomIn">
+              ➕
+            </button>
           </div>
         </div>
 
-        <!-- Navigasi Bawah -->
-        <div class="page-nav bottom-nav">
-          <button
-            class="nav-btn"
-            :disabled="currentPage === 1"
-            @click="goToPrevPage"
-          >
-            ‹ Sebelumnya
-          </button>
-          <button
-            class="nav-btn"
-            :disabled="currentPage === totalPages"
-            @click="goToNextPage"
-          >
-            Selanjutnya ›
-          </button>
+        <!-- Wrapper anchor untuk QR overlay -->
+        <div class="pdf-section-wrapper">
+          <!-- PDF Card -->
+          <div class="pdf-card">
+            <div class="pdf-wrapper" ref="pdfContainer">
+              <div v-if="isLoading" class="pdf-loading">Memuat halaman...</div>
+              <vue-pdf-embed
+                :source="pdfUrl"
+                :page="currentPage"
+                :width="computedWidth"
+                @loaded="handleDocumentLoad"
+                @rendered="handleDocumentRendered"
+              />
+            </div>
+          </div>
+
+          <div v-if="isLastPage && totalPages > 1" class="qr-overlay">
+            <div class="qr-box">
+              <qrcode-vue
+                :value="`https://jejak-tanahku.id/1`"
+                :size="30"
+                level="H"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -247,9 +267,14 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Pastikan tidak ada overflow horizontal sama sekali */
-:deep(*) {
-  box-sizing: border-box;
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 4px;
 }
 
 .detail-container {
@@ -257,7 +282,6 @@ onMounted(async () => {
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -279,24 +303,6 @@ onMounted(async () => {
   color: #111827;
   margin: 0;
   word-break: break-all;
-}
-
-.pdf-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.page-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.bottom-nav {
-  padding-bottom: 24px;
-  justify-content: space-between;
 }
 
 .nav-btn {
@@ -327,26 +333,38 @@ onMounted(async () => {
   font-weight: 500;
 }
 
-/* Kunci utama: wrapper harus 100% tanpa padding/margin ekstra */
-.pdf-wrapper {
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Anchor utama untuk QR overlay */
+.pdf-section-wrapper {
   position: relative;
   width: 100%;
-  background: white;
+}
+
+/* pdf-card: shadow & rounded, tanpa overflow hidden */
+.pdf-card {
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  line-height: 0; /* hilangkan gap bawah canvas */
+  background: white;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
-/* Paksa canvas PDF mengisi wrapper penuh */
+/* pdf-wrapper: hanya container PDF */
+.pdf-wrapper {
+  width: 100%;
+  background: white;
+  line-height: 0;
+}
+
 .pdf-wrapper :deep(canvas) {
-  width: 100% !important;
-  height: auto !important;
   display: block;
-}
-
-.pdf-wrapper :deep(.vue-pdf-embed) {
-  width: 100% !important;
+  max-width: none;
 }
 
 .pdf-loading {
@@ -363,18 +381,29 @@ onMounted(async () => {
 
 .qr-overlay {
   position: absolute;
-  bottom: 36px;
-  right: 24px;
-  background: white;
+  bottom: 15%;
+  right: 10%;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.qr-box {
+  pointer-events: auto;
   padding: 6px;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
   line-height: normal;
+}
+
+.qr-box :deep(canvas) {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
 }
 
 .qr-label {
@@ -383,5 +412,46 @@ onMounted(async () => {
   color: #065f46;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 8px;
+  margin-top: 2px;
+}
+
+.zoom-btn {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zoom-btn:not(:disabled):active {
+  background-color: #f3f4f6;
+}
+
+.zoom-info {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  min-width: 45px;
+  text-align: center;
 }
 </style>
