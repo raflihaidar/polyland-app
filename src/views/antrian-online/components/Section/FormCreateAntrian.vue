@@ -18,8 +18,11 @@ const props = defineProps<{
 }>();
 
 const emits = defineEmits<{
-  (e: 'update:data', value: { pemohon: User | null; office: OfficeLand | null }): void;
-  (e: 'handleMenu', menu: 'form' | 'loket'): void;
+  (
+    e: "update:data",
+    value: { pemohon: User | null; office: OfficeLand | null },
+  ): void;
+  (e: "handleMenu", menu: "form" | "loket"): void;
 }>();
 
 const params = ref({
@@ -30,12 +33,12 @@ const params = ref({
 
 const data = computed({
   get: () => props.data,
-  set: (val) => emits('update:data', val),
+  set: (val) => emits("update:data", val),
 });
 
 const handleNext = () => {
-    emits('handleMenu', 'loket')
-}
+  emits("handleMenu", "loket");
+};
 
 const isValid = computed(() => {
   return data.value.pemohon && data.value.office;
@@ -47,7 +50,7 @@ const getOfficeLands = async () => {
 
 onMounted(async () => {
   if (user.value) {
-    emits('update:data', {
+    emits("update:data", {
       ...props.data,
       pemohon: user.value,
     });
@@ -62,13 +65,10 @@ onMounted(async () => {
     </section>
 
     <template v-if="data.pemohon">
-      <div
-        class="bg-white p-5 rounded-xl flex items-center gap-x-3"
-      >
+      <div class="bg-white p-5 rounded-xl flex items-center gap-x-3">
         <UIcon name="ri:user-3-line" class="size-5" />
         <p class="font-medium">{{ data.pemohon?.name }}</p>
-        <section>
-        </section>
+        <section></section>
       </div>
     </template>
     <template v-else>
@@ -94,14 +94,22 @@ onMounted(async () => {
     </UFormField>
 
     <UFormField label="Lokasi Kerja">
-      <UInput
-        :readonly="true"
+      <UTextarea
+        variant="outline"
         :value="data.office?.address"
-        class="w-full"
-        size="xl"
+        placeholder="Lokasi Kantah"
+        class="w-full text-dark"
+        readonly
+        block
       />
     </UFormField>
 
-    <UButton :disabled="!isValid" label="Lanjut" block class="mt-5" @click="handleNext"/>
+    <UButton
+      :disabled="!isValid"
+      label="Lanjut"
+      block
+      class="mt-5"
+      @click="handleNext"
+    />
   </UForm>
 </template>

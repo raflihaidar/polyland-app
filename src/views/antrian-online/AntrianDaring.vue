@@ -1,36 +1,54 @@
 <script setup lang="ts">
 import MobileLayout from "@/layouts/Mobile.vue";
 import type { OfficeLand, User } from "@/types";
-import FormCreateAntrian from "./components/Section/FormCreateAntrian.vue";
-import LoketList from "./components/Section/LoketList.vue";
 import { provide, ref } from "vue";
+import AntrianList from "./components/Section/AntrianList.vue";
+import type { TabsItem } from "@nuxt/ui";
+import PanggilanList from "./components/Section/PanggilanList.vue";
 
 provide("head-title", "Antrian Daring");
 
-const activeSection = ref<'form' | 'loket'>('form');
+const activeSection = ref<"form" | "loket" | "detail">("form");
 
-const handleMenu = (menu: 'form' | 'loket') => {
+const handleMenu = (menu: "form" | "loket" | "detail") => {
   activeSection.value = menu;
 };
+const active = ref("Antrian");
 
 interface AntrianOnline {
-  pemohon: User | null,
-  office: OfficeLand | null,
-  date: Date | null,
-  type: 'SHM' | 'SHGB' | 'SHGU' | null
+  pemohon: User | null;
+  office: OfficeLand | null;
 }
 
 const data = ref<AntrianOnline>({
   pemohon: null,
   office: null,
-  date: null,
-  type: null
 });
+
+const tabList: TabsItem[] = [
+  {
+    label: "Antrian",
+    value: "Antrian",
+  },
+  {
+    label: "Panggilan",
+    value: "panggilan",
+  },
+];
 </script>
 
 <template>
   <MobileLayout>
-    <FormCreateAntrian v-if="activeSection === 'form'" v-model:data="data" @handleMenu="handleMenu" />
-    <LoketList v-if="activeSection === 'loket'" v-model:data="data" @handleMenu="handleMenu" />
+    <template v-if="active === 'Antrian'">
+      <AntrianList />
+    </template>
+    <template v-else>
+      <PanggilanList />
+    </template>
+    <UTabs
+      class="absolute bottom-0 left-0 right-0 w-[95%] mx-auto"
+      v-model="active"
+      :items="tabList"
+    />
   </MobileLayout>
 </template>

@@ -3,15 +3,31 @@ export const antrianOnlineRoutes = [
     path: "/antrian-online",
     name: "antrian-online",
     component: () => import("../views/antrian-online/AntrianDaring.vue"),
-    children : [
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/antrian-online/create",
+    name: "antrian-online.create",
+    component: () => import("../views/antrian-online/PageCreateAntrian.vue"),
+    children: [
       {
-        path: 'antrian-online.form',
-        component: () => import("@/views/antrian-online/components/Section/FormCreateAntrian.vue"),
+        path: "form",
+        name: "antrian-online.form",
+        component: () =>
+          import("@/views/antrian-online/components/Section/FormCreateAntrian.vue"),
       },
       {
-        path: 'antrian-online.loket',
-        component: () => import("@/views/antrian-online/components/Section/LoketList.vue"), 
-      }
+        path: "loket",
+        name: "antrian-online.loket",
+        component: () =>
+          import("@/views/antrian-online/components/Section/LoketList.vue"),
+      },
+      {
+        path: "detail-antrian",
+        name: "antrian-online.detail",
+        component: () =>
+          import("@/views/antrian-online/components/Section/DetailQueue.vue"),
+      },
     ],
     meta: { requiresAuth: true },
   },

@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useApiPrivate } from "@/composables/useApi";
-import type { OfficeLand, Meta } from "@/types";
+// import type { Certificate, Meta } from "@/types";
 
-export const useOfficeLandStore = defineStore("office-land", () => {
-  const offices = ref<OfficeLand[]>([]);
+export const useOnlineQueueStore = defineStore("online-queue", () => {
+  const loket = ref<any[]>([]);
   const loadArr = ref<string[]>([]);
 
   const startLoading = (key: string) => {
@@ -19,13 +19,13 @@ export const useOfficeLandStore = defineStore("office-land", () => {
 
   const isLoading = (key: string): boolean => loadArr.value.includes(key);
 
-  const getAll = async (meta: Meta = { page: 1, limit: 10, search: "" }) => {
+  const getLoketByOfficeId = async (officeId: string) => {
     try {
       startLoading("FETCH");
       const { data } = await useApiPrivate().get(
-        `/land-office?page=${meta.page}&limit=${meta.limit}&search=${meta.search}`,
+        `/loket?office_id=${officeId}`,
       );
-      offices.value = data.data ?? [];
+      loket.value = data.data ?? [];
       return {
         status: data.status,
         message: data.message,
@@ -35,39 +35,39 @@ export const useOfficeLandStore = defineStore("office-land", () => {
         status: err.response.data.status || "error",
         message:
           err.response.data.message ||
-          "Terjadi kesalahan saat login, silahkan coba lagi",
+          "Terjadi kesalahan saat mengambil data, silahkan coba lagi",
       };
     } finally {
       stopLoading("FETCH");
     }
   };
 
-  const getStatus = async (id: string) => {
+  const createQueue = async (loketId: string, date: Date) => {
     try {
-      startLoading("FETCH_STATUS");
-      const { data } = await useApiPrivate().get(`/land-office/${id}/status`);
+      startLoading("CREATE_QUEUE");
+      const { data } = await useApiPrivate().post(`/queue/${loketId}`, {
+        date,
+      });
+
       return {
         status: data.status,
         message: data.message,
-        data: data.data,
       };
-    } catch (err: any) {
+    } catch (error: any) {
       return {
-        status: err.response.data.status || "error",
-        message:
-          err.response.data.message ||
-          "Terjadi kesalahan saat login, silahkan coba lagi",
-        data: null,
+        status: error.response.data.status,
+        message: error.response.data.message,
       };
     } finally {
-      stopLoading("FETCH_STATUS");
+      stopLoading("CREATE_QUEUE");
     }
   };
 
   return {
-    offices,
-    getAll,
-    getStatus,
+    loadArr,
+    loket,
+    getLoketByOfficeId,
+    createQueue,
     isLoading,
   };
 });

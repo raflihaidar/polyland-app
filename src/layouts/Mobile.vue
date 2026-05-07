@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import Header from "../components/shared/HeaderMobile.vue";
 import { useRoute } from "vue-router";
+
 const route = useRoute();
 
 const isAuthPage = computed(() => {
@@ -10,13 +11,18 @@ const isAuthPage = computed(() => {
 </script>
 
 <template>
-  <div class="flex justify-center items-center min-h-screen h-auto">
-    <div class="shadow-2xl min-h-screen h-auto w-full max-w-md flex flex-col">
+  <div class="min-h-screen flex justify-center bg-gray-100">
+    <!-- Mobile Container -->
+    <div
+      class="relative w-full max-w-md min-h-screen bg-white shadow-2xl overflow-hidden flex flex-col"
+    >
+      <!-- Header -->
       <Header v-if="!isAuthPage" />
 
-      <div class="w-full bg-secondary pt-20 px-5 pb-24 flex-1 h-full">
+      <!-- Content -->
+      <main class="flex-1 w-full bg-secondary px-5 pt-20 pb-24 overflow-y-auto">
         <slot />
-      </div>
+      </main>
     </div>
   </div>
 </template>

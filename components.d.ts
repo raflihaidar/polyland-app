@@ -49,6 +49,7 @@ declare module 'vue' {
     USelect: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
     USelectMenu: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/SelectMenu.vue')['default']
     UStepper: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Stepper.vue')['default']
+    UTabs: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Tabs.vue')['default']
     UTextarea: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Textarea.vue')['default']
     UTooltip: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Tooltip.vue')['default']
     UUser: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/User.vue')['default']

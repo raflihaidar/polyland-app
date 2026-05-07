@@ -1,5 +1,7 @@
 <template>
+  <UApp>
     <router-view></router-view>
+  </UApp>
 </template>
 
 <script setup lang="ts">
