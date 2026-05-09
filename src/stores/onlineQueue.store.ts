@@ -52,6 +52,7 @@ export const useOnlineQueueStore = defineStore("online-queue", () => {
       return {
         status: data.status,
         message: data.message,
+        data: data.data,
       };
     } catch (error: any) {
       return {

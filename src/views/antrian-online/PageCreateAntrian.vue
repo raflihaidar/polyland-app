@@ -4,7 +4,7 @@ import type { OfficeLand, User } from "@/types";
 import FormCreateAntrian from "./components/Section/FormCreateAntrian.vue";
 import LoketList from "./components/Section/LoketList.vue";
 import { provide, ref } from "vue";
-import DetailQueue from "./components/Section/DetailQueue.vue";
+// import DetailQueue from "./components/Section/DetailQueue.vue";
 
 provide("head-title", "Antrian Daring");
 
@@ -37,6 +37,5 @@ const data = ref<AntrianOnline>({
       v-model:data="data"
       @handleMenu="handleMenu"
     />
-    <DetailQueue v-if="activeSection === 'detail'" />
   </MobileLayout>
 </template>

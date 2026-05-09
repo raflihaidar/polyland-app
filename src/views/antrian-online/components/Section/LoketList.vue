@@ -7,9 +7,11 @@ import { useOnlineQueueStore } from "@/stores/onlineQueue.store";
 import { storeToRefs } from "pinia";
 import { useOfficeLandStore } from "@/stores/office-land.store";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
+import { useRouter } from "vue-router";
 
 const store = useOnlineQueueStore();
 const officeStore = useOfficeLandStore();
+const router = useRouter();
 
 const { loket } = storeToRefs(store);
 
@@ -55,11 +57,14 @@ const handleSubmit = async (id: string) => {
       modelValue.value?.year,
       modelValue.value?.month - 1,
       modelValue.value.day,
+      12,
+      0,
+      0,
     );
-    const { status, message } = await store.createQueue(id, date);
+    const { data: result, status, message } = await store.createQueue(id, date);
 
     if (status === "success") {
-      emits("handleMenu", "detail");
+      router.push(`/antrian-online/detail-tiket/${result?.id}`);
     } else {
       toast.add({
         title: "Error",

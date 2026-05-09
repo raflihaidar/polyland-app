@@ -22,13 +22,14 @@ export const antrianOnlineRoutes = [
         component: () =>
           import("@/views/antrian-online/components/Section/LoketList.vue"),
       },
-      {
-        path: "detail-antrian",
-        name: "antrian-online.detail",
-        component: () =>
-          import("@/views/antrian-online/components/Section/DetailQueue.vue"),
-      },
     ],
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/antrian-online/detail-tiket/:id",
+    name: "antrian-online.detail-tiket",
+    component: () =>
+      import("@/views/antrian-online/components/Section/DetailQueue.vue"),
     meta: { requiresAuth: true },
   },
 ];
