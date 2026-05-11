@@ -6,7 +6,6 @@ import { useRouter } from "vue-router";
 import { MetaMaskSDK } from "@metamask/sdk";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import * as z from "zod";
-import MobileLayout from "@/layouts/Mobile.vue";
 import { account, walletClient } from "@/lib/walletClient";
 import { PrivateKey } from "eciesjs";
 import { Buffer } from "buffer";
@@ -150,155 +149,146 @@ const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
 </script>
 
 <template>
-  <MobileLayout>
-    <section v-if="store.isLoading('AUTH_CHECK')">
-      <UIcon name="line-md:loading-loop" class="text-primary size-10" />
-    </section>
-    <section v-else class="flex flex-col justify-center w-full">
-      <h1 class="text-3xl font-semibold mb-10 text-center text-dark-500">
-        Daftar
-      </h1>
+  <section v-if="store.isLoading('AUTH_CHECK')">
+    <UIcon name="line-md:loading-loop" class="text-primary size-10" />
+  </section>
+  <section v-else class="flex flex-col justify-center w-full">
+    <h1 class="text-3xl font-semibold mb-10 text-center text-dark-500">
+      Daftar
+    </h1>
 
-      <UAlert
-        v-if="alert.show"
-        :description="alert.message"
-        color="error"
-        class="rounded-lg mb-4"
-      />
+    <UAlert
+      v-if="alert.show"
+      :description="alert.message"
+      color="error"
+      class="rounded-lg mb-4"
+    />
 
-      <UForm
-        :schema="schema"
-        :state="form"
-        class="space-y-4"
-        @submit="onSubmit"
-      >
-        <UFormField name="name" class="mb-4 outline-none">
-          <UInput
-            v-model="form.name"
-            size="xl"
-            icon="iconoir:user-square"
-            placeholder="Masukkan Nama"
-            class="w-full"
-            :ui="{ base: 'rounded-full' }"
-          />
-        </UFormField>
-
-        <UFormField name="username" class="mb-4 outline-none">
-          <UInput
-            v-model="form.username"
-            size="xl"
-            icon="iconoir:user-scan"
-            placeholder="Masukkan username"
-            class="w-full"
-            :ui="{ base: 'rounded-full' }"
-          />
-        </UFormField>
-
-        <UFormField name="email" class="mb-4 outline-none">
-          <UInput
-            v-model="form.email"
-            size="xl"
-            icon="iconoir:mail"
-            placeholder="Masukkan Email"
-            class="w-full"
-            :ui="{ base: 'rounded-full' }"
-          />
-        </UFormField>
-
-        <UFormField name="password" class="mb-4 outline-none">
-          <UInput
-            v-model="form.password"
-            :type="showPassword ? 'text' : 'password'"
-            size="xl"
-            icon="iconoir:lock"
-            placeholder="Masukkan Password"
-            class="w-full"
-            :ui="{ base: 'rounded-full' }"
-          >
-            <template #trailing>
-              <UButton
-                color="neutral"
-                variant="link"
-                size="sm"
-                :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
-                :aria-label="showPassword ? 'Hide password' : 'Show password'"
-                :aria-pressed="showPassword"
-                aria-controls="password"
-                @click="showPassword = !showPassword"
-              />
-            </template>
-          </UInput>
-        </UFormField>
-
-        <UFormField name="confirmPassword" class="mb-4 rounded-full">
-          <UInput
-            v-model="form.confirmPassword"
-            :type="showConfirmPassowrd ? 'text' : 'password'"
-            size="xl"
-            icon="iconoir:lock"
-            placeholder="Konfirmasi Password"
-            class="w-full"
-            :ui="{ base: 'rounded-full' }"
-          >
-            <template #trailing>
-              <UButton
-                color="neutral"
-                variant="link"
-                size="sm"
-                :icon="
-                  showConfirmPassowrd ? 'i-lucide-eye-off' : 'i-lucide-eye'
-                "
-                :aria-label="
-                  showConfirmPassowrd ? 'Hide password' : 'Show password'
-                "
-                :aria-pressed="showConfirmPassowrd"
-                aria-controls="password"
-                @click="showConfirmPassowrd = !showConfirmPassowrd"
-              />
-            </template>
-          </UInput>
-        </UFormField>
-
-        <UButton
-          type="submit"
-          label="Daftar"
-          variant="solid"
-          :loading="store.isLoading('REGISTER')"
-          block
-          class="mt-5 rounded-full py-3"
+    <UForm :schema="schema" :state="form" class="space-y-4" @submit="onSubmit">
+      <UFormField name="name" class="mb-4 outline-none">
+        <UInput
+          v-model="form.name"
+          size="xl"
+          icon="iconoir:user-square"
+          placeholder="Masukkan Nama"
+          class="w-full"
+          :ui="{ base: 'rounded-full' }"
         />
+      </UFormField>
 
-        <p class="text-center mt-5">
-          Sudah punya akun?
-          <ULink to="/login" class="text-primary font-medium">Masuk</ULink>
-        </p>
-      </UForm>
+      <UFormField name="username" class="mb-4 outline-none">
+        <UInput
+          v-model="form.username"
+          size="xl"
+          icon="iconoir:user-scan"
+          placeholder="Masukkan username"
+          class="w-full"
+          :ui="{ base: 'rounded-full' }"
+        />
+      </UFormField>
 
-      <!-- <div class="flex items-center my-6">
-        <div class="grow border-t border border-gray-300"></div>
-        <span class="mx-4 text-sm text-gray-500"> atau lanjutkan dengan </span>
-        <div class="grow border border-t border-gray-300"></div>
-      </div>
+      <UFormField name="email" class="mb-4 outline-none">
+        <UInput
+          v-model="form.email"
+          size="xl"
+          icon="iconoir:mail"
+          placeholder="Masukkan Email"
+          class="w-full"
+          :ui="{ base: 'rounded-full' }"
+        />
+      </UFormField>
+
+      <UFormField name="password" class="mb-4 outline-none">
+        <UInput
+          v-model="form.password"
+          :type="showPassword ? 'text' : 'password'"
+          size="xl"
+          icon="iconoir:lock"
+          placeholder="Masukkan Password"
+          class="w-full"
+          :ui="{ base: 'rounded-full' }"
+        >
+          <template #trailing>
+            <UButton
+              color="neutral"
+              variant="link"
+              size="sm"
+              :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              :aria-pressed="showPassword"
+              aria-controls="password"
+              @click="showPassword = !showPassword"
+            />
+          </template>
+        </UInput>
+      </UFormField>
+
+      <UFormField name="confirmPassword" class="mb-4 rounded-full">
+        <UInput
+          v-model="form.confirmPassword"
+          :type="showConfirmPassowrd ? 'text' : 'password'"
+          size="xl"
+          icon="iconoir:lock"
+          placeholder="Konfirmasi Password"
+          class="w-full"
+          :ui="{ base: 'rounded-full' }"
+        >
+          <template #trailing>
+            <UButton
+              color="neutral"
+              variant="link"
+              size="sm"
+              :icon="showConfirmPassowrd ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+              :aria-label="
+                showConfirmPassowrd ? 'Hide password' : 'Show password'
+              "
+              :aria-pressed="showConfirmPassowrd"
+              aria-controls="password"
+              @click="showConfirmPassowrd = !showConfirmPassowrd"
+            />
+          </template>
+        </UInput>
+      </UFormField>
 
       <UButton
-        v-if="isMetaMaskSupported"
-        @click="connect"
-        :loading="store.isLoading('CONNECT_WALLET')"
-        label="Connect Wallet"
+        type="submit"
+        label="Daftar"
         variant="solid"
-        icon="token-branded:metamask"
+        :loading="store.isLoading('REGISTER')"
         block
         class="mt-5 rounded-full py-3"
       />
 
-      <p v-else class="text-3xl font-semibold text-text-500">
-        Install Metamask extension
+      <p class="text-center mt-5">
+        Sudah punya akun?
+        <ULink to="/login" class="text-primary font-medium">Masuk</ULink>
       </p>
+    </UForm>
 
-      <p v-if="error" class="text-red-500 mt-4 text-sm">
-        {{ error }}
-      </p> -->
-      <div></div>
-    </section>
-  </MobileLayout>
+    <!-- <div class="flex items-center my-6">
+      <div class="grow border-t border border-gray-300"></div>
+      <span class="mx-4 text-sm text-gray-500"> atau lanjutkan dengan </span>
+      <div class="grow border border-t border-gray-300"></div>
+    </div>
+
+    <UButton
+      v-if="isMetaMaskSupported"
+      @click="connect"
+      :loading="store.isLoading('CONNECT_WALLET')"
+      label="Connect Wallet"
+      variant="solid"
+      icon="token-branded:metamask"
+      block
+      class="mt-5 rounded-full py-3"
+    />
+
+    <p v-else class="text-3xl font-semibold text-text-500">
+      Install Metamask extension
+    </p>
+
+    <p v-if="error" class="text-red-500 mt-4 text-sm">
+      {{ error }}
+    </p> -->
+    <div></div>
+  </section>
 </template>

@@ -26,6 +26,7 @@ export interface User {
   email: string;
   isVerified: boolean;
   roles: string[];
+  land_office_id: string;
 }
 
 export interface Officer {

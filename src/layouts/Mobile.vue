@@ -8,6 +8,8 @@ const route = useRoute();
 const isAuthPage = computed(() => {
   return ["login", "register"].includes(route.name as string);
 });
+
+console.log("page : ", route.name);
 </script>
 
 <template>
@@ -21,7 +23,7 @@ const isAuthPage = computed(() => {
 
       <!-- Content -->
       <main class="flex-1 w-full bg-secondary px-5 pt-20 pb-24 overflow-y-auto">
-        <slot />
+        <RouterView />
       </main>
     </div>
   </div>

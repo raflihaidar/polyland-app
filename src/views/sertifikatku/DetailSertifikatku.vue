@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import MobileLayout from "@/layouts/Mobile.vue";
 import { useCertificateStore } from "@/stores/certificate.store";
 import { useIPFSStore } from "@/stores/ipfs.store";
 import { onMounted, ref, provide, computed, nextTick } from "vue";
@@ -179,91 +178,89 @@ onMounted(async () => {
 </script>
 
 <template>
-  <MobileLayout>
-    <div class="detail-container">
-      <!-- Header -->
-      <div class="cert-header">
-        <p class="cert-label">NIB Sertifikat</p>
-        <h3 class="cert-nib">
-          {{ certificate?.nib || "Belum ada sertifikat" }}
-        </h3>
+  <div class="detail-container">
+    <!-- Header -->
+    <div class="cert-header">
+      <p class="cert-label">NIB Sertifikat</p>
+      <h3 class="cert-nib">
+        {{ certificate?.nib || "Belum ada sertifikat" }}
+      </h3>
+    </div>
+
+    <!-- Tombol Lihat -->
+    <UButton
+      v-if="!pdfUrl"
+      @click="handleViewCertificate"
+      :loading="isDecrypting"
+      block
+    >
+      {{ isDecrypting ? "Mendekripsi..." : "Lihat Sertifikat" }}
+    </UButton>
+
+    <!-- PDF Viewer -->
+    <div v-if="pdfUrl" class="pdf-section">
+      <!-- Navigasi Halaman dan Fitur Zoom -->
+      <div class="controls-wrapper">
+        <div class="page-nav">
+          <button
+            class="nav-btn"
+            :disabled="currentPage === 1"
+            @click="goToPrevPage"
+          >
+            ‹ Prev
+          </button>
+          <span class="page-info"
+            >Hal {{ currentPage }} / {{ totalPages }}</span
+          >
+          <button
+            class="nav-btn"
+            :disabled="currentPage === totalPages"
+            @click="goToNextPage"
+          >
+            Next ›
+          </button>
+        </div>
+
+        <!-- Tombol Zoom In & Out -->
+        <div class="zoom-controls">
+          <button class="zoom-btn" :disabled="scale <= 1.0" @click="zoomOut">
+            ➖
+          </button>
+          <span class="zoom-info">{{ Math.round(scale * 100) }}%</span>
+          <button class="zoom-btn" :disabled="scale >= 2.5" @click="zoomIn">
+            ➕
+          </button>
+        </div>
       </div>
 
-      <!-- Tombol Lihat -->
-      <UButton
-        v-if="!pdfUrl"
-        @click="handleViewCertificate"
-        :loading="isDecrypting"
-        block
-      >
-        {{ isDecrypting ? "Mendekripsi..." : "Lihat Sertifikat" }}
-      </UButton>
-
-      <!-- PDF Viewer -->
-      <div v-if="pdfUrl" class="pdf-section">
-        <!-- Navigasi Halaman dan Fitur Zoom -->
-        <div class="controls-wrapper">
-          <div class="page-nav">
-            <button
-              class="nav-btn"
-              :disabled="currentPage === 1"
-              @click="goToPrevPage"
-            >
-              ‹ Prev
-            </button>
-            <span class="page-info"
-              >Hal {{ currentPage }} / {{ totalPages }}</span
-            >
-            <button
-              class="nav-btn"
-              :disabled="currentPage === totalPages"
-              @click="goToNextPage"
-            >
-              Next ›
-            </button>
-          </div>
-
-          <!-- Tombol Zoom In & Out -->
-          <div class="zoom-controls">
-            <button class="zoom-btn" :disabled="scale <= 1.0" @click="zoomOut">
-              ➖
-            </button>
-            <span class="zoom-info">{{ Math.round(scale * 100) }}%</span>
-            <button class="zoom-btn" :disabled="scale >= 2.5" @click="zoomIn">
-              ➕
-            </button>
+      <!-- Wrapper anchor untuk QR overlay -->
+      <div class="pdf-section-wrapper">
+        <!-- PDF Card -->
+        <div class="pdf-card">
+          <div class="pdf-wrapper" ref="pdfContainer">
+            <div v-if="isLoading" class="pdf-loading">Memuat halaman...</div>
+            <vue-pdf-embed
+              :source="pdfUrl"
+              :page="currentPage"
+              :width="computedWidth"
+              @loaded="handleDocumentLoad"
+              @rendered="handleDocumentRendered"
+            />
           </div>
         </div>
 
-        <!-- Wrapper anchor untuk QR overlay -->
-        <div class="pdf-section-wrapper">
-          <!-- PDF Card -->
-          <div class="pdf-card">
-            <div class="pdf-wrapper" ref="pdfContainer">
-              <div v-if="isLoading" class="pdf-loading">Memuat halaman...</div>
-              <vue-pdf-embed
-                :source="pdfUrl"
-                :page="currentPage"
-                :width="computedWidth"
-                @loaded="handleDocumentLoad"
-                @rendered="handleDocumentRendered"
-              />
-            </div>
-          </div>
-
-          <div v-if="isLastPage && totalPages > 1" class="qr-overlay">
-            <div class="qr-box">
-              <qrcode-vue
-                :value="`https://jejak-tanahku.id/1`"
-                :size="30"
-                level="H"
-              />
-            </div>
+        <div v-if="isLastPage && totalPages > 1" class="qr-overlay">
+          <div class="qr-box">
+            <qrcode-vue
+              :value="`https://jejak-tanahku.id/1`"
+              :size="30"
+              level="H"
+            />
           </div>
         </div>
       </div>
     </div>
-  </MobileLayout>
+  </div>
 </template>
 
 <style scoped>

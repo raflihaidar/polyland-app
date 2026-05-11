@@ -90,7 +90,10 @@ onMounted(async () => {
     <div class="text-center">
       <h3 class="font-medium">{{ data.office?.name }}</h3>
       <div class="mt-3 text-md font-medium">
-        <p v-if="!officeStatus?.is_open">
+        <p
+          v-if="!officeStatus?.is_open"
+          :class="{ 'text-danger': officeStatus?.reason === 'Hari libur' }"
+        >
           {{ officeStatus?.reason }}
         </p>
         <p v-else>{{ officeStatus?.open_at }} - {{ officeStatus?.close_at }}</p>
@@ -139,7 +142,14 @@ onMounted(async () => {
             <p>: {{ item.sisa_antrian || 0 }}</p>
 
             <p class="font-normal">Antrian Saat ini</p>
-            <p>: {{ item.antrian_saat_ini || "-" }}</p>
+            <p>
+              :
+              {{
+                item.antrian_saat_ini
+                  ? "A-" + item.antrian_saat_ini.queue_number
+                  : "-"
+              }}
+            </p>
           </div>
 
           <template #footer>

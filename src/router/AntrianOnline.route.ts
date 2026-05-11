@@ -33,3 +33,18 @@ export const antrianOnlineRoutes = [
     meta: { requiresAuth: true },
   },
 ];
+
+export const adminAntrianOnline = [
+  {
+    path: "antrian-online/dashboard",
+    name: "antrian-online.dashboard",
+    component: () => import("../views/antrian-online/admin/Dashboard.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "antrian-online/list",
+    name: "antrian-online.list",
+    component: () => import("../views/antrian-online/admin/AntrianList.vue"),
+    meta: { requiresAuth: true },
+  },
+];

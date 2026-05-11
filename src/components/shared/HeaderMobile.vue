@@ -6,7 +6,7 @@ const route = useRoute();
 const router = useRouter();
 const title = inject("head-title", null);
 
-const exclude = ["home", "aktaku", "profile"];
+const exclude = ["public.home", "aktaku", "profile"];
 
 const isMainPage = computed(() => {
   return exclude.includes(route.name as string);
@@ -15,7 +15,7 @@ const isMainPage = computed(() => {
 
 <template>
   <header
-    v-if="route.name === 'home'"
+    v-if="route.name === 'public.home'"
     class="w-full bg-white left-1/2 transform -translate-x-1/2 max-w-md h-16 max-h-16 flex z-50 justify-between items-center p-5 fixed top-0 shadow-xs"
   >
     <h1 class="font-semibold">Jejak Tanahku</h1>

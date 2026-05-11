@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import ui from "@nuxt/ui/vite";
-import path from 'path';
+import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,6 +21,9 @@ export default defineConfig({
           dark: "dark",
           text: "text",
           secondText: "secondText",
+        },
+        skeleton: {
+          base: "animate-pulse rounded-md bg-slate-200",
         },
       },
     }),
@@ -59,7 +62,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      "@": path.resolve(__dirname, "src"),
     },
   },
 });

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { provide, computed, ref } from "vue";
-import MobileLayout from "@/layouts/Mobile.vue";
 import { useApplicationStore } from "@/stores/application.store";
 import {
   createPublicClient,
@@ -172,83 +171,78 @@ const formatRupiah = (value: number) => {
 </script>
 
 <template>
-  <MobileLayout>
-    <section v-if="detailBerkas" class="p-2">
-      <!-- Header -->
-      <section class="w-full flex justify-between items-start flex-col">
-        <p class="font-bold text-lg">Peralihan Hak Jual Beli</p>
-        <p
-          :class="['font-semibold', 'text-sm', statusColor]"
-          class="text-nowrap"
-        >
-          {{ statusLabel }}
-        </p>
-      </section>
-
-      <!-- Informasi Biaya -->
-      <section class="w-full mt-5 border-b border-slate-200 pb-3">
-        <div class="flex items-center justify-between mb-3">
-          <p>Biaya</p>
-          <p>{{ formatRupiah(detailBerkas.total_fee) }}</p>
-        </div>
-
-        <div class="flex items-center justify-between mb-3">
-          <p>Petugas</p>
-          <p>-</p>
-        </div>
-
-        <div class="flex items-center justify-between mb-3">
-          <p>Dibuat</p>
-          <p>{{ detailBerkas.createdAt }}</p>
-        </div>
-
-        <div class="flex items-center justify-between mb-3">
-          <p>Selesai</p>
-          <p>{{ detailBerkas.paidAt || "-" }}</p>
-        </div>
-      </section>
-
-      <!-- Tombol Pembayaran -->
-      <section v-if="showPaymentButton" class="mt-5">
-        <UButton
-          block
-          :loading="loading"
-          label="Bayar Sekarang"
-          @click="handlePayment"
-        />
-      </section>
-
-      <!-- Pemohon -->
-      <section class="w-full mt-5 border-b border-slate-200 pb-3">
-        <p class="font-bold mb-2">Pemohon</p>
-        <p>{{ detailBerkas.person.name }}</p>
-      </section>
-
-      <!-- Kontak Kantor -->
-      <section class="w-full mt-5 border-b border-slate-200 pb-3">
-        <p class="font-bold mb-3">Kontak Kantor</p>
-
-        <div class="mb-3">
-          <p class="font-medium">{{ detailBerkas.landOffice.name }}</p>
-          <p class="text-sm text-gray-600">
-            {{ detailBerkas.landOffice.address }}
-          </p>
-        </div>
-
-        <div class="mb-3">
-          <p>Email</p>
-          <p class="text-sm text-gray-600">
-            {{ detailBerkas.landOffice.email }}
-          </p>
-        </div>
-
-        <div>
-          <p>Telp</p>
-          <p class="text-sm text-gray-600">
-            {{ detailBerkas.landOffice.phone }}
-          </p>
-        </div>
-      </section>
+  <section v-if="detailBerkas" class="p-2">
+    <!-- Header -->
+    <section class="w-full flex justify-between items-start flex-col">
+      <p class="font-bold text-lg">Peralihan Hak Jual Beli</p>
+      <p :class="['font-semibold', 'text-sm', statusColor]" class="text-nowrap">
+        {{ statusLabel }}
+      </p>
     </section>
-  </MobileLayout>
+
+    <!-- Informasi Biaya -->
+    <section class="w-full mt-5 border-b border-slate-200 pb-3">
+      <div class="flex items-center justify-between mb-3">
+        <p>Biaya</p>
+        <p>{{ formatRupiah(detailBerkas.total_fee) }}</p>
+      </div>
+
+      <div class="flex items-center justify-between mb-3">
+        <p>Petugas</p>
+        <p>-</p>
+      </div>
+
+      <div class="flex items-center justify-between mb-3">
+        <p>Dibuat</p>
+        <p>{{ detailBerkas.createdAt }}</p>
+      </div>
+
+      <div class="flex items-center justify-between mb-3">
+        <p>Selesai</p>
+        <p>{{ detailBerkas.paidAt || "-" }}</p>
+      </div>
+    </section>
+
+    <!-- Tombol Pembayaran -->
+    <section v-if="showPaymentButton" class="mt-5">
+      <UButton
+        block
+        :loading="loading"
+        label="Bayar Sekarang"
+        @click="handlePayment"
+      />
+    </section>
+
+    <!-- Pemohon -->
+    <section class="w-full mt-5 border-b border-slate-200 pb-3">
+      <p class="font-bold mb-2">Pemohon</p>
+      <p>{{ detailBerkas.person.name }}</p>
+    </section>
+
+    <!-- Kontak Kantor -->
+    <section class="w-full mt-5 border-b border-slate-200 pb-3">
+      <p class="font-bold mb-3">Kontak Kantor</p>
+
+      <div class="mb-3">
+        <p class="font-medium">{{ detailBerkas.landOffice.name }}</p>
+        <p class="text-sm text-gray-600">
+          {{ detailBerkas.landOffice.address }}
+        </p>
+      </div>
+
+      <div class="mb-3">
+        <p>Email</p>
+        <p class="text-sm text-gray-600">
+          {{ detailBerkas.landOffice.email }}
+        </p>
+      </div>
+
+      <div>
+        <p>Telp</p>
+        <p class="text-sm text-gray-600">
+          {{ detailBerkas.landOffice.phone }}
+        </p>
+      </div>
+    </section>
+  </section>
 </template>

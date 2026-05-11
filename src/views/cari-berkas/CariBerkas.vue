@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, provide, ref } from "vue";
-import MobileLayout from "../../layouts/Mobile.vue";
 import { useApplicationStore } from "../../stores/application.store";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import type { SelectMenuItem, FormSubmitEvent } from "@nuxt/ui";
@@ -59,49 +58,47 @@ const handleSearch = async () => {
 </script>
 
 <template>
-  <MobileLayout>
-    <section
-      class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 px-5 w-[90%]"
-    >
-      <UForm class="w-full grid grid-col-1 gap-y-3">
-        <UFormField label="Kantor Pertanahan">
-          <USelectMenu
-            v-model="form.office"
-            value-key="id"
-            :items="officeList"
-            class="w-full"
-            placeholder="Pilih Kantor Pertanahan"
-            size="xl"
-          />
-        </UFormField>
-
-        <UFormField label="Nomor Berkas">
-          <UInput
-            v-model="form.nomorBerkas"
-            placeholder="Masukkan nomor berkas"
-            class="w-full"
-            size="xl"
-          />
-        </UFormField>
-
-        <UFormField label="Tahun">
-          <UInputMenu
-            v-model="form.year"
-            :items="years"
-            class="w-full"
-            size="xl"
-          />
-        </UFormField>
-
-        <UButton
-          :disabled="!isValid"
-          label="Cari Berkas"
-          @click="handleSearch"
-          block
-          class="mt-5"
-          :loading="store.isLoading('SEARCH')"
+  <section
+    class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 px-5 w-[90%]"
+  >
+    <UForm class="w-full grid grid-col-1 gap-y-3">
+      <UFormField label="Kantor Pertanahan">
+        <USelectMenu
+          v-model="form.office"
+          value-key="id"
+          :items="officeList"
+          class="w-full"
+          placeholder="Pilih Kantor Pertanahan"
+          size="xl"
         />
-      </UForm>
-    </section>
-  </MobileLayout>
+      </UFormField>
+
+      <UFormField label="Nomor Berkas">
+        <UInput
+          v-model="form.nomorBerkas"
+          placeholder="Masukkan nomor berkas"
+          class="w-full"
+          size="xl"
+        />
+      </UFormField>
+
+      <UFormField label="Tahun">
+        <UInputMenu
+          v-model="form.year"
+          :items="years"
+          class="w-full"
+          size="xl"
+        />
+      </UFormField>
+
+      <UButton
+        :disabled="!isValid"
+        label="Cari Berkas"
+        @click="handleSearch"
+        block
+        class="mt-5"
+        :loading="store.isLoading('SEARCH')"
+      />
+    </UForm>
+  </section>
 </template>

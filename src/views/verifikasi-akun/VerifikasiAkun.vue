@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import mobileLayout from "../../layouts/Mobile.vue";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import { provide, ref, useTemplateRef, shallowRef } from "vue";
 import * as z from "zod";
@@ -86,98 +85,92 @@ const submit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
 </script>
 
 <template>
-  <mobileLayout>
-    <div class="w-full">
-      <UAlert
-        title="Informasi"
-        description="Silahkan isi data diri sesuai dengan KTP"
-        variant="solid"
-        class="mb-4"
-      />
-      <UForm :schema="schema" :state="form" class="space-y-4" @submit="submit">
-        <UFormField name="fullName" label="Nama Lengkap">
-          <UInput
-            v-model="form.fullName"
-            placeholder="Masukkan Nama Lengkap"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField name="nik" label="NIK">
-          <UInput
-            v-model="form.nik"
-            placeholder="16 Digit NIK"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField name="phone" label="No HP">
-          <UInput
-            v-model="form.phone"
-            placeholder="Masukkan Nomor HP"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField name="birthPlace" label="Tempat Lahir">
-          <UInput
-            v-model="form.birthPlace"
-            placeholder="Tempat Lahir"
-            class="w-full"
-          />
-        </UFormField>
-
-        <section class="flex items-center gap-x-5">
-          <UFormField name="birthDate" label="Tanggal Lahir">
-            <UInputDate ref="inputDate" v-model="modelValue" class="w-full">
-              <template #trailing>
-                <UPopover :reference="inputDate?.inputsRef[3]?.$el">
-                  <UButton
-                    color="neutral"
-                    variant="link"
-                    size="sm"
-                    icon="i-lucide-calendar"
-                    aria-label="Select a date"
-                    class="px-0"
-                  />
-
-                  <template #content>
-                    <UCalendar v-model="modelValue" class="p-2" />
-                  </template>
-                </UPopover>
-              </template>
-            </UInputDate>
-          </UFormField>
-
-          <UFormField name="gender" label="Jenis Kelamin">
-            <USelect
-              v-model="form.gender"
-              value-key="value"
-              :items="[
-                { label: 'Laki-Laki', value: Gender.lakiLaki },
-                { label: 'Perempuan', value: Gender.perempuan },
-              ]"
-              class="w-full"
-            />
-          </UFormField>
-        </section>
-
-        <UFormField name="address" label="Alamat Lengkap">
-          <UTextarea
-            v-model="form.address"
-            placeholder="Masukkan alamat lengkap"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UButton
-          type="submit"
-          label="Kirim Verifikasi"
-          :loading="store.isLoading('SUBMIT_VERIFICATION')"
-          block
-          class="mt-5"
+  <div class="w-full">
+    <UAlert
+      title="Informasi"
+      description="Silahkan isi data diri sesuai dengan KTP"
+      variant="solid"
+      class="mb-4"
+    />
+    <UForm :schema="schema" :state="form" class="space-y-4" @submit="submit">
+      <UFormField name="fullName" label="Nama Lengkap">
+        <UInput
+          v-model="form.fullName"
+          placeholder="Masukkan Nama Lengkap"
+          class="w-full"
         />
-      </UForm>
-    </div>
-  </mobileLayout>
+      </UFormField>
+
+      <UFormField name="nik" label="NIK">
+        <UInput v-model="form.nik" placeholder="16 Digit NIK" class="w-full" />
+      </UFormField>
+
+      <UFormField name="phone" label="No HP">
+        <UInput
+          v-model="form.phone"
+          placeholder="Masukkan Nomor HP"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField name="birthPlace" label="Tempat Lahir">
+        <UInput
+          v-model="form.birthPlace"
+          placeholder="Tempat Lahir"
+          class="w-full"
+        />
+      </UFormField>
+
+      <section class="flex items-center gap-x-5">
+        <UFormField name="birthDate" label="Tanggal Lahir">
+          <UInputDate ref="inputDate" v-model="modelValue" class="w-full">
+            <template #trailing>
+              <UPopover :reference="inputDate?.inputsRef[3]?.$el">
+                <UButton
+                  color="neutral"
+                  variant="link"
+                  size="sm"
+                  icon="i-lucide-calendar"
+                  aria-label="Select a date"
+                  class="px-0"
+                />
+
+                <template #content>
+                  <UCalendar v-model="modelValue" class="p-2" />
+                </template>
+              </UPopover>
+            </template>
+          </UInputDate>
+        </UFormField>
+
+        <UFormField name="gender" label="Jenis Kelamin">
+          <USelect
+            v-model="form.gender"
+            value-key="value"
+            :items="[
+              { label: 'Laki-Laki', value: Gender.lakiLaki },
+              { label: 'Perempuan', value: Gender.perempuan },
+            ]"
+            class="w-full"
+          />
+        </UFormField>
+      </section>
+
+      <UFormField name="address" label="Alamat Lengkap">
+        <UTextarea
+          v-model="form.address"
+          placeholder="Masukkan alamat lengkap"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UButton
+        type="submit"
+        label="Kirim Verifikasi"
+        :loading="store.isLoading('SUBMIT_VERIFICATION')"
+        block
+        class="mt-5"
+      />
+    </UForm>
+  </div>
 </template>

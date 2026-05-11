@@ -10,10 +10,17 @@ const queueList = ref<any[]>([]);
 
 const isLoading = ref<boolean>(false);
 
+const statusColorMap: Record<string, string> = {
+  MENUNGGU: "warning",
+  DIPANGGIL: "info",
+  SELESAI: "success",
+  TIDAK_HADIR: "error",
+};
+
 const getQueue = async () => {
   try {
     isLoading.value = true;
-    const { data } = await useApiPrivate().get(`/queue/`);
+    const { data } = await useApiPrivate().get(`/queue?date=${new Date()}`);
     queueList.value = data.data;
   } catch (error) {
     console.log(error);
@@ -30,11 +37,15 @@ onMounted(() => {
 <template>
   <div v-if="queueList.length > 0">
     <UCard v-for="(item, index) in queueList" :key="index" class="mb-4">
-      <UBadge color="warning" variant="soft" class="rounded-full mb-3">
+      <UBadge
+        :color="statusColorMap[item.status]"
+        variant="soft"
+        class="rounded-full mb-3"
+      >
         {{ capitalizeFirstLetter(item.status) }}
       </UBadge>
       <div class="flex justify-between items-center">
-        <h4 class="w-[80%] truncate">{{ item.loket?.name }}</h4>
+        <h4 class="w-[80%] truncate font-semibold">{{ item.loket?.name }}</h4>
         <UBadge class="font-bold rounded-full">
           A-{{ item.queue_number }}
         </UBadge>
@@ -53,6 +64,12 @@ onMounted(() => {
         <UIcon name="ri:arrow-right-long-line" class="size-5" />
       </UButton>
     </UCard>
+  </div>
+  <div
+    v-else-if="isLoading"
+    class="flex justify-center absolute -translate-1/2 left-1/2 top-1/2"
+  >
+    <UIcon name="line-md:loading-twotone-loop" class="size-10 text-primary" />
   </div>
   <div
     v-else
