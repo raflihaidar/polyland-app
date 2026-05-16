@@ -3,7 +3,7 @@ export const antrianOnlineRoutes = [
     path: "/antrian-online",
     name: "antrian-online",
     component: () => import("../views/antrian-online/AntrianDaring.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, title: "Antrian Online" },
   },
   {
     path: "/antrian-online/create",
@@ -15,12 +15,14 @@ export const antrianOnlineRoutes = [
         name: "antrian-online.form",
         component: () =>
           import("@/views/antrian-online/components/Section/FormCreateAntrian.vue"),
+        meta: { title: "Buat Antrian" },
       },
       {
         path: "loket",
         name: "antrian-online.loket",
         component: () =>
           import("@/views/antrian-online/components/Section/LoketList.vue"),
+        meta: { title: "Daftar Loket" },
       },
     ],
     meta: { requiresAuth: true },
@@ -30,7 +32,7 @@ export const antrianOnlineRoutes = [
     name: "antrian-online.detail-tiket",
     component: () =>
       import("@/views/antrian-online/components/Section/DetailQueue.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, title: "Detail Antrian" },
   },
 ];
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppLoading from "@/components/shared/AppLoading.vue";
 import { useApiPrivate } from "@/composables/useApi";
 import { capitalizeFirstLetter, formatDateIndonesia } from "@/utils/format";
 import { onMounted, ref } from "vue";
@@ -20,7 +21,11 @@ const statusColorMap: Record<string, string> = {
 const getQueue = async () => {
   try {
     isLoading.value = true;
-    const { data } = await useApiPrivate().get(`/queue?date=${new Date()}`);
+    const formatted = new Date().toISOString().split("T")[0];
+
+    const { data } = await useApiPrivate().get(
+      `/queue?date=${formatted}&status=MENUNGGU`,
+    );
     queueList.value = data.data;
   } catch (error) {
     console.log(error);
@@ -65,12 +70,13 @@ onMounted(() => {
       </UButton>
     </UCard>
   </div>
-  <div
+  <!-- <div
     v-else-if="isLoading"
     class="flex justify-center absolute -translate-1/2 left-1/2 top-1/2"
   >
     <UIcon name="line-md:loading-twotone-loop" class="size-10 text-primary" />
-  </div>
+  </div> -->
+  <AppLoading v-else-if="isLoading" />
   <div
     v-else
     class="absolute top-1/2 left-1/2 -translate-x-1/2 -tarnslate-y-1/2 w-full text-center"

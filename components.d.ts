@@ -12,8 +12,10 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Account: typeof import('./src/components/Account.vue')['default']
+    AppLoading: typeof import('./src/components/shared/AppLoading.vue')['default']
     Balance: typeof import('./src/components/Balance.vue')['default']
     HeaderMobile: typeof import('./src/components/shared/HeaderMobile.vue')['default']
+    Loading: typeof import('./src/components/shared/Loading.vue')['default']
     NavMobile: typeof import('./src/components/shared/NavMobile.vue')['default']
     PayableButton: typeof import('./src/components/PayableButton.vue')['default']
     PublicationButton: typeof import('./src/components/PublicationButton.vue')['default']

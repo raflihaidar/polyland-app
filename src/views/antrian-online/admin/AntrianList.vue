@@ -62,27 +62,23 @@ function getRowItems(row: Row<any>) {
       type: "label",
       label: "Aksi",
     },
-    // {
-    //   label: "Salin ID Antrian",
-    //   icon: "i-lucide-copy",
-    //   onSelect() {
-    //     navigator.clipboard.writeText(row.original.id.toString());
-    //     toast.add({
-    //       title: "Disalin ke clipboard",
-    //       description: "ID antrian berhasil disalin.",
-    //     });
-    //   },
-    // },
+
     {
       type: "separator",
     },
-    {
-      label: "Panggil Antrian",
-      icon: "i-lucide-phone-call",
-      onSelect() {
-        handelCallQueue(selectedLoket.value?.id);
-      },
-    },
+
+    ...(row.original.status === "MENUNGGU"
+      ? [
+          {
+            label: "Panggil Antrian",
+            icon: "i-lucide-phone-call",
+            onSelect() {
+              handelCallQueue(selectedLoket.value?.id);
+            },
+          },
+        ]
+      : []),
+
     {
       label: "Selesaikan Antrian",
       icon: "i-lucide-check-circle",
@@ -90,6 +86,7 @@ function getRowItems(row: Row<any>) {
         handleUpdateStatus(row.original.id.toString(), "SELESAI");
       },
     },
+
     {
       label: "Tandai Tidak Hadir",
       icon: "i-lucide-check-circle",
@@ -98,20 +95,6 @@ function getRowItems(row: Row<any>) {
         handleUpdateStatus(row.original.id.toString(), "TIDAK_HADIR");
       },
     },
-    // {
-    //   type: "separator",
-    // },
-    // {
-    //   label: "Batalkan Antrian",
-    //   icon: "i-lucide-x-circle",
-    //   color: "error",
-    //   onSelect() {
-    //     toast.add({
-    //       title: "Antrian dibatalkan",
-    //       description: "Antrian telah dibatalkan.",
-    //     });
-    //   },
-    // },
   ];
 }
 

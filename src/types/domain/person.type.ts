@@ -17,7 +17,7 @@ export interface PersonCreate {
   email: string;
   password: string;
   confirmPassword: string;
-  publicKey: string;
+  // publicKey: string;
 }
 
 export interface User {

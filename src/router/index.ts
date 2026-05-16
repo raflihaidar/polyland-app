@@ -26,7 +26,18 @@ const routes = [
         component: () => import("@/views/Home.vue"),
         meta: { requiresAuth: true },
       },
-
+      {
+        path: "scan-qr",
+        name: "public.scan-qr",
+        component: () => import("@/views/ScanQR.vue"),
+        meta: { requiresAuth: false, title: "Scan QR" },
+      },
+      {
+        path: "verify/certificate/:tokenId",
+        name: "public.verify-certificate",
+        component: () => import("@/views/VerifyResult.vue"),
+        meta: { requiresAuth: false },
+      },
       ...aktaRoutes,
       ...cariBerkasRoutes,
       ...profilRoutes,
@@ -45,7 +56,9 @@ const routes = [
   {
     path: "/admin",
     component: () => import("@/layouts/Default.vue"),
-
+    redirect: {
+      name: "admin.dashboard",
+    },
     meta: {
       requiresAuth: true,
       roles: [
@@ -58,7 +71,7 @@ const routes = [
 
     children: [
       {
-        path: "",
+        path: "dashboard",
         name: "admin.dashboard",
         component: () => import("@/views/Dashboard.vue"),
         meta: { requiresAuth: true },

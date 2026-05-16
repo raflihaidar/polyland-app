@@ -6,10 +6,10 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 
 const isAuthPage = computed(() => {
-  return ["login", "register"].includes(route.name as string);
+  return ["login", "register", "public.verify-certificate"].includes(
+    route.name as string,
+  );
 });
-
-console.log("page : ", route.name);
 </script>
 
 <template>

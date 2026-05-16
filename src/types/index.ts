@@ -5,5 +5,6 @@ export * from "./domain/person.type";
 export * from "./domain/ownerTransfer.type";
 export * from "./domain/office-land.type";
 export * from "./domain/certificate.type";
+export * from "./domain/land.type";
 
 export * from "./global.type";

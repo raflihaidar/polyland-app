@@ -1,11 +1,15 @@
-import { account, walletClient } from "./walletClient";
+import { getAccount, walletClient } from "./walletClient";
 
 export async function signLoginMessage(message: string) {
+  const account = await getAccount();
+
   if (!account) {
     throw new Error("Account is not defined");
   }
 
-  const signature = await walletClient.signMessage({
+  const client = walletClient();
+
+  const signature = await client.signMessage({
     account,
     message,
   });

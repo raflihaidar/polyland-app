@@ -12,11 +12,20 @@ export const CertificateType = {
 export type CertificateType =
   (typeof CertificateType)[keyof typeof CertificateType];
 
+export type ApplicationType = "SHM" | "HGB" | "AJB";
+
 export type CertificateStatus =
   | "AKTIF"
   | "TIDAK_AKTIF"
   | "DALAM_PROSES"
   | "BERMASALAH";
+
+export type ApplicationStatus =
+  | "DIPROSES"
+  | "VERIFIKASI_BERKAS"
+  | "MENUNGGU_PEMBAYARAN"
+  | "DITOLAK"
+  | "SELESAI";
 
 export const DocumentType = {
   KTP_PEMBELI: "KTP_PEMBELI",

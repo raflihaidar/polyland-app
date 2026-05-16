@@ -31,6 +31,6 @@ const isMainPage = computed(() => {
       class="size-6"
       @click="router.back"
     />
-    <p class="text-center w-full font-medium">{{ title }}</p>
+    <p class="text-center w-full font-semibold">{{ route.meta?.title }}</p>
   </header>
 </template>

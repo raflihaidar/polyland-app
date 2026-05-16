@@ -1,10 +1,8 @@
 <script setup lang="ts">
+import AppLoading from "@/components/shared/AppLoading.vue";
 import { useApiPrivate } from "@/composables/useApi";
 import { capitalizeFirstLetter, formatDateIndonesia } from "@/utils/format";
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
 
 const queueList = ref<any[]>([]);
 
@@ -67,12 +65,7 @@ onMounted(() => {
       </UButton>
     </UCard>
   </div>
-  <div
-    v-else-if="isLoading"
-    class="flex justify-center absolute -translate-1/2 left-1/2 top-1/2"
-  >
-    <UIcon name="line-md:loading-twotone-loop" class="size-10 text-primary" />
-  </div>
+  <AppLoading v-else-if="isLoading" />
   <div
     v-else
     class="absolute top-1/2 left-1/2 -translate-x-1/2 -tarnslate-y-1/2 w-full text-center"

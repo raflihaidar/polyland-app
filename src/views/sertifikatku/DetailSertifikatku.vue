@@ -3,7 +3,7 @@ import { useCertificateStore } from "@/stores/certificate.store";
 import { useIPFSStore } from "@/stores/ipfs.store";
 import { onMounted, ref, provide, computed, nextTick } from "vue";
 import { useRoute } from "vue-router";
-import { account, walletClient } from "@/lib/walletClient";
+import { getAccount, walletClient } from "@/lib/walletClient";
 import { keccak256 } from "viem";
 import { decrypt } from "eciesjs";
 import { Buffer } from "buffer";
@@ -53,8 +53,10 @@ const handleViewCertificate = async () => {
       throw new Error("Data IPFS tidak ditemukan");
     }
 
+    const account = await getAccount();
+
     const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
-    const signature = await walletClient.signMessage({
+    const signature = await walletClient().signMessage({
       account: account as `0x${string}`,
       message,
     });
@@ -104,6 +106,14 @@ const handleViewCertificate = async () => {
     const blob = new Blob([decryptedBuffer], { type: "application/pdf" });
     pdfUrl.value = URL.createObjectURL(blob);
     currentPage.value = 1;
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sertifikat-${certificate.value.code}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
     // Hitung width setelah pdf-wrapper muncul di DOM
     await nextTick();

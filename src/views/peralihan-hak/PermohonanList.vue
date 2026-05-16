@@ -13,21 +13,21 @@ import { getPaginationRowModel, type Row } from "@tanstack/table-core";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import { useAuthStore } from "@/stores/auth.store";
 import { useApiPrivate } from "@/composables/useApi";
+import { useRouter } from "vue-router";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
-// const UCheckbox = resolveComponent("UCheckbox");
 
+const router = useRouter();
 const toast = useToast();
 const table = useTemplateRef("table");
 const authStore = useAuthStore();
 const isLoading = ref<boolean>(false);
-const loketList = ref<any[]>([]);
-const queueList = ref<any[]>([]);
+const applicationList = ref<any[]>([]);
 const statusFilter = ref("all");
-const selectedLoket = ref<any>(null);
-const selectedDate = ref<Date>(new Date());
+const typeFilter = ref("all");
+const selectedDate = ref<string>("");
 const searchQuery = ref<string>("");
 
 // Pagination dari server
@@ -36,8 +36,6 @@ const serverPagination = ref({
   page: 1,
   limit: 10,
   totalPages: 1,
-  hasNextPage: false,
-  hasPrevPage: false,
 });
 
 const columnFilters = ref([]);
@@ -45,15 +43,26 @@ const columnVisibility = ref();
 const rowSelection = ref({});
 const pagination = ref({
   pageIndex: 0,
-  pageSize: 5,
+  pageSize: 10,
 });
 
 // Status badge color mapping
 const statusColorMap: Record<string, any> = {
-  MENUNGGU: "warning",
-  DIPANGGIL: "info",
+  DIPROSES: "info",
+  VERIFIKASI_BERKAS: "warning",
+  MENUNGGU_PEMBAYARAN: "warning",
+  PENANDATANGANAN: "primary",
+  DITOLAK: "error",
   SELESAI: "success",
-  TIDAK_HADIR: "error",
+};
+
+const statusLabelMap: Record<string, string> = {
+  DIPROSES: "Diproses",
+  VERIFIKASI_BERKAS: "Verifikasi Berkas",
+  MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
+  PENANDATANGANAN: "Penandatanganan",
+  DITOLAK: "Ditolak",
+  SELESAI: "Selesai",
 };
 
 function getRowItems(row: Row<any>) {
@@ -62,251 +71,215 @@ function getRowItems(row: Row<any>) {
       type: "label",
       label: "Aksi",
     },
-    // {
-    //   label: "Salin ID Antrian",
-    //   icon: "i-lucide-copy",
-    //   onSelect() {
-    //     navigator.clipboard.writeText(row.original.id.toString());
-    //     toast.add({
-    //       title: "Disalin ke clipboard",
-    //       description: "ID antrian berhasil disalin.",
-    //     });
-    //   },
-    // },
     {
       type: "separator",
     },
     {
-      label: "Panggil Antrian",
-      icon: "i-lucide-phone-call",
+      label: "Lihat Detail",
+      icon: "i-lucide-eye",
       onSelect() {
-        handelCallQueue(selectedLoket.value?.id);
+        router.push(`/admin/peralihan-hak/${row.original.id}`);
       },
     },
     {
-      label: "Selesaikan Antrian",
-      icon: "i-lucide-check-circle",
+      label: "Verifikasi Berkas",
+      icon: "i-lucide-file-check",
       onSelect() {
-        handleUpdateStatus(row.original.id.toString(), "SELESAI");
+        handleUpdateStatus(row.original.id, "VERIFIKASI_BERKAS");
       },
     },
     {
-      label: "Tandai Tidak Hadir",
+      label: "Selesaikan",
       icon: "i-lucide-check-circle",
+      onSelect() {
+        handleUpdateStatus(row.original.id, "SELESAI");
+      },
+    },
+    {
+      type: "separator",
+    },
+    {
+      label: "Tolak Permohonan",
+      icon: "i-lucide-x-circle",
       color: "error",
       onSelect() {
-        handleUpdateStatus(row.original.id.toString(), "TIDAK_HADIR");
+        handleUpdateStatus(row.original.id, "DITOLAK");
       },
     },
-    // {
-    //   type: "separator",
-    // },
-    // {
-    //   label: "Batalkan Antrian",
-    //   icon: "i-lucide-x-circle",
-    //   color: "error",
-    //   onSelect() {
-    //     toast.add({
-    //       title: "Antrian dibatalkan",
-    //       description: "Antrian telah dibatalkan.",
-    //     });
-    //   },
-    // },
   ];
 }
 
 const columns: TableColumn<any>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) =>
-  //     h(UCheckbox, {
-  //       modelValue: table.getIsSomePageRowsSelected()
-  //         ? "indeterminate"
-  //         : table.getIsAllPageRowsSelected(),
-  //       "onUpdate:modelValue": (value: boolean | "indeterminate") =>
-  //         table.toggleAllPageRowsSelected(!!value),
-  //       ariaLabel: "Pilih semua",
-  //     }),
-  //   cell: ({ row }) =>
-  //     h(UCheckbox, {
-  //       modelValue: row.getIsSelected(),
-  //       "onUpdate:modelValue": (value: boolean | "indeterminate") =>
-  //         row.toggleSelected(!!value),
-  //       ariaLabel: "Pilih baris",
-  //     }),
-  // },
   {
-    accessorKey: "queue_number",
-    header: "No. Antrian",
+    accessorKey: "file_number",
+    header: "No. Berkas",
     cell: ({ row }) =>
       h(
         "span",
-        { class: "font-medium text-lg tabular-nums" },
-        "A" + String(row.original.queue_number),
+        { class: "font-mono text-sm font-medium" },
+        row.original.file_number ?? "-",
       ),
   },
   {
     accessorKey: "person",
     header: "Nama Pemohon",
     cell: ({ row }) =>
-      h("span", { class: "font-medium" }, row.original.person?.name ?? "-"),
+      h("div", { class: "flex flex-col gap-0.5" }, [
+        h("span", { class: "font-medium" }, row.original.person?.name ?? "-"),
+        h(
+          "span",
+          { class: "text-xs text-muted" },
+          row.original.person?.nik ?? "",
+        ),
+      ]),
   },
   {
-    accessorKey: "queue_date",
-    header: "Tanggal Antrian",
+    accessorKey: "land",
+    header: "Lokasi Tanah",
     cell: ({ row }) => {
-      const date = new Date(row.original.queue_date);
+      const land = row.original.land;
+      if (!land) return h("span", {}, "-");
+      const address = `${land.street_address}, RT ${land.rt}/RW ${land.rw}, ${land.village?.name}, ${land.district?.name}`;
+      return h("div", { class: "flex flex-col gap-0.5" }, [
+        h("span", { class: "text-sm" }, address),
+        h(
+          "span",
+          { class: "text-xs text-muted" },
+          `${land.regency?.name}, ${land.province?.name}`,
+        ),
+      ]);
+    },
+  },
+  {
+    accessorKey: "type",
+    header: "Tipe",
+    cell: ({ row }) =>
+      h(
+        UBadge,
+        { variant: "outline", color: "neutral" },
+        () => row.original.type ?? "-",
+      ),
+  },
+  {
+    accessorKey: "nib",
+    header: "NIB",
+    cell: ({ row }) =>
+      h("span", { class: "font-mono text-sm" }, row.original.nib ?? "-"),
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status: string = row.original.status;
+      const color = statusColorMap[status] ?? "neutral";
+      const label = statusLabelMap[status] ?? status;
+      return h(
+        UBadge,
+        { class: "capitalize whitespace-nowrap", variant: "subtle", color },
+        () => label,
+      );
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Tgl. Permohonan",
+    cell: ({ row }) => {
+      const date = new Date(row.original.createdAt);
       return h(
         "span",
-        {},
+        { class: "text-sm whitespace-nowrap" },
         date.toLocaleDateString("id-ID", {
           day: "2-digit",
-          month: "long",
+          month: "short",
           year: "numeric",
         }),
       );
     },
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    filterFn: "equals",
-    cell: ({ row }) => {
-      const status: string = row.original.status;
-      const color = statusColorMap[status] ?? "neutral";
-      return h(
-        UBadge,
-        { class: "capitalize", variant: "subtle", color },
-        () => status,
-      );
-    },
-  },
-  {
     id: "actions",
+    header: "Aksi",
     cell: ({ row }) =>
-      h(
-        "div",
-        { class: "text-right" },
-        h(
-          UDropdownMenu,
-          {
-            content: { align: "end" },
-            items: getRowItems(row),
-          },
-          () =>
-            h(UButton, {
-              icon: "i-lucide-ellipsis-vertical",
-              color: "neutral",
-              variant: "ghost",
-              class: "ml-auto",
-            }),
-        ),
-      ),
+      h(UButton, {
+        icon: "ri:eye-line",
+        class: "cursor-pointer",
+        onClick: () =>
+          router.push(`/admin/peralihan-hak/permohonan/${row.original?.id}`),
+      }),
   },
 ];
 
-// Ambil daftar loket
-const getLoketList = async () => {
-  try {
-    isLoading.value = true;
-    const { data } = await useApiPrivate().get(
-      `/loket?office_id=${authStore.user?.land_office_id}`,
-    );
-    if (data.status === "success") {
-      loketList.value = data.data;
-      selectedLoket.value = loketList.value?.[0] ?? null;
-    }
-  } catch {
-    loketList.value = [];
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-// Ambil daftar antrian berdasarkan loket yang dipilih
-const getQueueList = async () => {
-  if (!selectedLoket.value?.id) return;
-
+// Ambil daftar permohonan
+const getApplicationList = async () => {
   try {
     isLoading.value = true;
 
     const status = statusFilter.value === "all" ? "" : statusFilter.value;
+    const type = typeFilter.value === "all" ? "" : typeFilter.value;
     const page = serverPagination.value.page;
     const limit = serverPagination.value.limit;
-    const date = new Date(selectedDate.value) ?? "";
-    const formatted = date.toISOString().split("T")[0];
-
     const search = searchQuery.value ?? "";
 
+    let dateParam = "";
+    if (selectedDate.value) {
+      dateParam = selectedDate.value;
+    }
+
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      ...(status && { status }),
+      ...(type && { type }),
+      ...(search && { search }),
+      ...(dateParam && { date: dateParam }),
+    });
+
     const { data } = await useApiPrivate().get(
-      `/loket/queues/${selectedLoket.value.id}?date=${formatted}&page=${page}&limit=${limit}&status=${status}&search=${search}`,
+      `/ownership-transfer/${authStore.user?.land_office_id}?${params.toString()}`,
+    );
+
+    if (data.message) {
+      applicationList.value = data.data.applications;
+      serverPagination.value.total = data.data.meta.total;
+      serverPagination.value.totalPages = data.data.meta.totalPages;
+      serverPagination.value.page = data.data.meta.page;
+      serverPagination.value.limit = data.data.meta.limit;
+    }
+  } catch (error) {
+    applicationList.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleUpdateStatus = async (id: string, status: string) => {
+  try {
+    isLoading.value = true;
+    const { data } = await useApiPrivate().put(
+      `/ownership-transfer/${id}/status`,
+      { status },
     );
 
     if (data.status === "success") {
-      queueList.value = data.data.data;
-      serverPagination.value = data.data.pagination;
-    }
-  } catch (error) {
-    queueList.value = [];
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const handelCallQueue = async (id: string) => {
-  try {
-    isLoading.value = true;
-    const { data } = await useApiPrivate().put(`/queue/call-queue/${id}`);
-
-    if (data.status === "success") {
       toast.add({
-        title: data.message,
+        title: "Berhasil Update Status",
+        description: data.message,
         color: "success",
       });
-      await getQueueList();
+      await getApplicationList();
     } else {
       toast.add({
-        title: data.message,
+        title: "Gagal Update Status",
+        description: data.message,
         color: "error",
       });
     }
   } catch (error: any) {
-    // toast.add({
-    //   title: error.message,
-    // });
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const handleUpdateStatus = async (
-  id: string,
-  status: "SELESAI" | "TIDAK_HADIR",
-) => {
-  try {
-    isLoading.value = true;
-    const { data } = await useApiPrivate().put(`/queue/status/${id}`, {
-      status,
+    toast.add({
+      title: "Terjadi Kesalahan",
+      description: "Gagal memperbarui status permohonan.",
+      color: "error",
     });
-
-    if (data.status === "success") {
-      toast.add({
-        title: "Berhasil Update Status Antrian",
-        description: data.message,
-        color: "success",
-      });
-      await getQueueList();
-    } else {
-      toast.add({
-        title: "Gagal Update Status Antrian",
-        description: data.message,
-        color: "error",
-      });
-    }
-  } catch (error: any) {
-    // toast.add({
-    //   title: error.message,
-    // });
   } finally {
     isLoading.value = false;
   }
@@ -316,23 +289,23 @@ watch(
   () => statusFilter.value,
   () => {
     serverPagination.value.page = 1;
-    getQueueList();
+    getApplicationList();
   },
 );
 
 watch(
-  () => selectedLoket.value,
+  () => typeFilter.value,
   () => {
     serverPagination.value.page = 1;
-    getQueueList();
+    getApplicationList();
   },
 );
 
 watch(
   () => selectedDate.value,
-  (val) => {
+  () => {
     serverPagination.value.page = 1;
-    getQueueList();
+    getApplicationList();
   },
 );
 
@@ -343,19 +316,18 @@ watch(
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
       serverPagination.value.page = 1;
-      getQueueList();
+      getApplicationList();
     }, 400);
   },
 );
 
 const goToPage = (page: number) => {
   serverPagination.value.page = page;
-  getQueueList();
+  getApplicationList();
 };
 
 onMounted(async () => {
-  await getLoketList();
-  await getQueueList();
+  await getApplicationList();
 });
 </script>
 
@@ -378,39 +350,8 @@ onMounted(async () => {
             v-model="searchQuery"
             class="max-w-sm"
             icon="i-lucide-search"
-            placeholder="Cari nama pemohon..."
+            placeholder="Cari nama pemohon / NIB..."
           />
-
-          <!-- Loket Selector -->
-          <UPopover
-            :content="{
-              align: 'start',
-              side: 'bottom',
-              sideOffset: 8,
-            }"
-            v-if="loketList.length > 0"
-          >
-            <UButton
-              color="neutral"
-              variant="subtle"
-              icon="material-symbols:wifi-home-outline-rounded"
-            />
-            <template #content>
-              <div class="p-4">
-                <p class="text-lg font-medium">Loket</p>
-                <p class="text-xs">Loket anda saat ini</p>
-                <div class="flex flex-col gap-1 min-w-40 mt-3">
-                  <URadioGroup
-                    v-model="selectedLoket"
-                    :items="loketList"
-                    value-key="id"
-                    label-key="name"
-                    class="border-2 border-primary p-2 rounded-lg"
-                  />
-                </div>
-              </div>
-            </template>
-          </UPopover>
         </div>
 
         <div class="flex flex-wrap items-center gap-1.5">
@@ -422,53 +363,51 @@ onMounted(async () => {
             placeholder="Filter tanggal..."
           />
 
+          <!-- Type Filter -->
+          <USelect
+            v-model="typeFilter"
+            :items="[
+              { label: 'Semua Tipe', value: 'all' },
+              { label: 'SHM', value: 'SHM' },
+              { label: 'SHGB', value: 'SHGB' },
+              { label: 'SHGU', value: 'SHGU' },
+            ]"
+            :ui="{
+              trailingIcon:
+                'group-data-[state=open]:rotate-180 transition-transform duration-200',
+            }"
+            placeholder="Tipe Sertifikat"
+            class="min-w-40"
+          />
+
           <!-- Status Filter -->
           <USelect
             v-model="statusFilter"
             :items="[
-              { label: 'Semua', value: 'all' },
-              { label: 'Menunggu', value: 'MENUNGGU' },
-              { label: 'Dipanggil', value: 'DIPANGGIL' },
+              { label: 'Semua Status', value: 'all' },
+              { label: 'Diproses', value: 'DIPROSES' },
+              { label: 'Verifikasi Berkas', value: 'VERIFIKASI_BERKAS' },
+              { label: 'Menunggu Pembayaran', value: 'MENUNGGU_PEMBAYARAN' },
+              { label: 'Penandatanganan', value: 'PENANDATANGANAN' },
+              { label: 'Ditolak', value: 'DITOLAK' },
               { label: 'Selesai', value: 'SELESAI' },
-              { label: 'Tidak Hadir', value: 'TIDAK_HADIR' },
             ]"
             :ui="{
               trailingIcon:
                 'group-data-[state=open]:rotate-180 transition-transform duration-200',
             }"
             placeholder="Filter status"
-            class="min-w-36"
+            class="min-w-44"
           />
 
-          <!-- Column Visibility -->
-          <UDropdownMenu
-            :items="
-              table?.tableApi
-                ?.getAllColumns()
-                .filter((column: any) => column.getCanHide())
-                .map((column: any) => ({
-                  label: upperFirst(column.id),
-                  type: 'checkbox' as const,
-                  checked: column.getIsVisible(),
-                  onUpdateChecked(checked: boolean) {
-                    table?.tableApi
-                      ?.getColumn(column.id)
-                      ?.toggleVisibility(!!checked);
-                  },
-                  onSelect(e?: Event) {
-                    e?.preventDefault();
-                  },
-                }))
-            "
-            :content="{ align: 'end' }"
-          >
-            <UButton
-              label="Tampilan"
-              color="neutral"
-              variant="outline"
-              trailing-icon="i-lucide-settings-2"
-            />
-          </UDropdownMenu>
+          <!-- Tambah Permohonan -->
+          <UButton
+            label="Buat Permohonan"
+            icon="i-lucide-plus"
+            color="primary"
+            class="min-w-44"
+            @click="router.push('/admin/peralihan-hak/create')"
+          />
         </div>
       </div>
 
@@ -483,7 +422,7 @@ onMounted(async () => {
           getPaginationRowModel: getPaginationRowModel(),
         }"
         class="shrink-0"
-        :data="queueList"
+        :data="applicationList"
         :columns="columns"
         :loading="isLoading"
         :ui="{
@@ -505,7 +444,7 @@ onMounted(async () => {
           <span class="font-semibold text-highlighted">
             {{ serverPagination.total }}
           </span>
-          antrian
+          permohonan
         </div>
 
         <div class="flex items-center gap-1.5">

@@ -12,6 +12,7 @@ export type CertificateAddress = {
 export interface Certificate {
   id: string;
   owners: string[];
+  label: string;
   nib: string;
   type: CertificateType;
   status: CertificateStatus;

@@ -9,7 +9,7 @@ import * as z from "zod";
 import { PrivateKey } from "eciesjs";
 import { Buffer } from "buffer";
 import { keccak256 } from "viem";
-import { account, walletClient } from "@/lib/walletClient";
+import { getAccount, walletClient } from "@/lib/walletClient";
 
 const error = ref<string | null>(null);
 const store = useAuthStore();
@@ -30,6 +30,7 @@ const schema = z.object({
   password: z.string().trim(),
 });
 type Schema = z.output<typeof schema>;
+const openModal = ref<boolean>(false);
 
 const mmsdk = new MetaMaskSDK({
   dappMetadata: {
@@ -51,8 +52,10 @@ const getProvider = async () => {
 const getEncryptionPublicKey = async () => {
   const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
 
+  const account = await getAccount();
+
   // 3. Minta Signature menggunakan viem
-  const signature = await walletClient.signMessage({
+  const signature = await walletClient().signMessage({
     account: account as `0x${string}`,
     message: message,
   });
@@ -69,15 +72,16 @@ const getEncryptionPublicKey = async () => {
 };
 
 const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
-  //   const provider = await getProvider();
-  //   if (!provider) {
-  //     alert.value = { show: true, message: "MetaMask tidak ditemukan" };
-  //     return;
-  //   }
-
-  //   const encryptionPublicKey = await getEncryptionPublicKey();
-  //   console.log("encrypt public key : ", encryptionPublicKey);
+  // console.log("login");
+  // const provider = await getProvider();
+  // if (!provider) {
+  //   alert.value = { show: true, message: "MetaMask tidak ditemukan" };
   //   return;
+  // }
+
+  // const encryptionPublicKey = await getEncryptionPublicKey();
+  // console.log("encrypt public key : ", encryptionPublicKey);
+  // return;
   const { status, message } = await store.login(event.data);
   alert.value = {
     show: status === "error" ? true : false,
@@ -88,6 +92,10 @@ const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
 };
 
 const connect = async (): Promise<void> => {
+  if (!isMetaMaskSupported.value) {
+    openModal.value = true;
+  }
+
   const provider = await getProvider();
   const { status, message } = await store.connectMetaMask(provider);
 
@@ -181,20 +189,26 @@ const connect = async (): Promise<void> => {
       <div class="grow border border-t border-gray-300"></div>
     </div>
 
-    <UButton
-      v-if="isMetaMaskSupported"
-      @click="connect"
-      :loading="store.isLoading('CONNECT_WALLET')"
-      label="Connect Wallet"
-      variant="solid"
-      icon="token-branded:metamask"
-      block
-      class="mt-5 rounded-full py-3"
-    />
+    <UModal v-model:open="openModal">
+      <UButton
+        @click="connect"
+        :loading="store.isLoading('CONNECT_WALLET')"
+        label="Connect Wallet"
+        variant="solid"
+        icon="token-branded:metamask"
+        block
+        class="mt-5 rounded-full py-3"
+      />
 
-    <p v-else class="text-3xl font-semibold text-text-500">
-      Install Metamask extension
-    </p>
+      <template #content>
+        <div class="flex justify-center p-5">
+          <UIcon
+            name="line-md:loading-twotone-loop"
+            class="size-10 text-primary"
+          />
+        </div>
+      </template>
+    </UModal>
 
     <p v-if="error" class="text-red-500 mt-4 text-sm">
       {{ error }}

@@ -12,7 +12,7 @@ const store = useApplicationStore();
 const router = useRouter();
 
 const isValid = computed(() => {
-  return form.value.office && form.value.nomorBerkas && form.value.year;
+  return form.value.nomorBerkas;
 });
 
 const currentYear = new Date().getFullYear();
@@ -62,7 +62,7 @@ const handleSearch = async () => {
     class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 px-5 w-[90%]"
   >
     <UForm class="w-full grid grid-col-1 gap-y-3">
-      <UFormField label="Kantor Pertanahan">
+      <!-- <UFormField label="Kantor Pertanahan">
         <USelectMenu
           v-model="form.office"
           value-key="id"
@@ -71,7 +71,7 @@ const handleSearch = async () => {
           placeholder="Pilih Kantor Pertanahan"
           size="xl"
         />
-      </UFormField>
+      </UFormField> -->
 
       <UFormField label="Nomor Berkas">
         <UInput
@@ -82,14 +82,14 @@ const handleSearch = async () => {
         />
       </UFormField>
 
-      <UFormField label="Tahun">
+      <!-- <UFormField label="Tahun">
         <UInputMenu
           v-model="form.year"
           :items="years"
           class="w-full"
           size="xl"
         />
-      </UFormField>
+      </UFormField> -->
 
       <UButton
         :disabled="!isValid"

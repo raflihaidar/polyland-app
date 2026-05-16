@@ -6,8 +6,8 @@ const route = useRoute();
 const router = useRouter();
 
 const navigationItem = ref<{ name: string; icon: string; slug: string }[]>([
-  { name: "Beranda", icon: "ri:home-3-fill", slug: "home" },
-  { name: "Scan Dokumen", icon: "ri:qr-scan-2-line", slug: "scan-qr" },
+  { name: "Beranda", icon: "lucide:home", slug: "public.home" },
+  { name: "Scan Dokumen", icon: "ri:qr-scan-2-line", slug: "public.scan-qr" },
   { name: "Profil", icon: "ri:user-3-line", slug: "profil" },
 ]);
 

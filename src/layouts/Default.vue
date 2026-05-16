@@ -12,7 +12,7 @@ const links = [
     {
       label: "Dashboard",
       icon: "ri:dashboard-line",
-      to: "/admin",
+      to: "/admin/dashboard",
       onSelect: () => {
         open.value = false;
       },
@@ -24,14 +24,14 @@ const links = [
       defaultOpen: false,
       type: "trigger",
       children: [
-        {
-          label: "Dashboard",
-          to: "/admin/antrian-online/dashboard",
-          exact: true,
-          onSelect: () => {
-            open.value = false;
-          },
-        },
+        // {
+        //   label: "Dashboard",
+        //   to: "/admin/antrian-online/dashboard",
+        //   exact: true,
+        //   onSelect: () => {
+        //     open.value = false;
+        //   },
+        // },
         {
           label: "Antrian",
           to: "/admin/antrian-online/list",
@@ -48,16 +48,16 @@ const links = [
       defaultOpen: false,
       type: "trigger",
       children: [
+        // {
+        //   label: "Dashboard",
+        //   to: "/admin/peralihan-hak/dashboard",
+        //   exact: true,
+        //   onSelect: () => {
+        //     open.value = false;
+        //   },
+        // },
         {
-          label: "Dashboard",
-          to: "/admin/peralihan-hak/dashboard",
-          exact: true,
-          onSelect: () => {
-            open.value = false;
-          },
-        },
-        {
-          label: "Ajukan Permohonan",
+          label: "Permohonan",
           to: "/admin/peralihan-hak/list-permohonan",
           exact: true,
           onSelect: () => {

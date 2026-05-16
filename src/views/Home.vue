@@ -97,7 +97,7 @@ onMounted(async () => {
         <h3 class="font-medium">Layanan</h3>
         <div class="mt-5 grid grid-cols-4 gap-x-5">
           <div
-            class="w-full text-center"
+            class="w-full text-center flex flex-col items-center"
             @click.stop="handleClickMenu('antrian-online')"
           >
             <div
@@ -111,7 +111,7 @@ onMounted(async () => {
             <p class="text-xs font-medium">Antrian Online</p>
           </div>
           <div
-            class="w-full text-center"
+            class="w-full text-center flex flex-col items-center"
             @click.stop="handleClickMenu('/cari-berkas')"
           >
             <div
@@ -129,7 +129,7 @@ onMounted(async () => {
         <h3 class="font-medium">Laci</h3>
         <div class="mt-5 grid grid-cols-4 gap-x-5">
           <div
-            class="w-full text-center"
+            class="w-full text-center flex flex-col items-center"
             @click.stop="handleClickMenu('/sertifikatku')"
           >
             <div
@@ -140,7 +140,7 @@ onMounted(async () => {
             <p class="text-xs font-medium">Sertifikatku</p>
           </div>
 
-          <div class="w-full text-center">
+          <div class="w-full text-center flex flex-col items-center">
             <div
               class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"
             >
@@ -153,7 +153,7 @@ onMounted(async () => {
             <p class="text-xs font-medium">Aktaku</p>
           </div>
 
-          <div class="w-full text-center">
+          <!-- <div class="w-full text-center">
             <div
               class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"
             >
@@ -164,7 +164,7 @@ onMounted(async () => {
               />
             </div>
             <p class="text-xs font-medium">Berkasku</p>
-          </div>
+          </div> -->
         </div>
       </div>
 

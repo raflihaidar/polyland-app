@@ -1,20 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAuthStore } from "../../stores/auth.store";
-import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { MetaMaskSDK } from "@metamask/sdk";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import * as z from "zod";
-import { account, walletClient } from "@/lib/walletClient";
-import { PrivateKey } from "eciesjs";
-import { Buffer } from "buffer";
-import { keccak256 } from "viem";
-
-const error = ref<string | null>(null);
 
 const store = useAuthStore();
-const { isAuthenticated, isMetaMaskSupported } = storeToRefs(store);
 const schema = z
   .object({
     name: z
@@ -81,65 +72,8 @@ const alert = ref<{ show: boolean; message: string }>({
   message: "",
 });
 
-const mmsdk = new MetaMaskSDK({
-  dappMetadata: {
-    name: "Jejak Tanahku",
-    url: window.location.href,
-  },
-});
-
-const getProvider = async () => {
-  if (typeof window !== "undefined" && window.ethereum) {
-    return window.ethereum;
-  }
-
-  // fallback ke SDK (mobile / PWA)
-  await mmsdk.connect();
-  return mmsdk.getProvider();
-};
-
-const getEncryptionPublicKey = async () => {
-  const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
-
-  // 3. Minta Signature menggunakan viem
-  const signature = await walletClient.signMessage({
-    account: account as `0x${string}`,
-    message: message,
-  });
-
-  // 4. Hash signature menggunakan keccak256 dari viem untuk entropy 32-byte
-  const entropy = keccak256(signature);
-
-  // 5. Generate KeyPair menggunakan eciesjs
-  // Hapus '0x' dan ubah ke Buffer
-  const privKey = new PrivateKey(Buffer.from(entropy.substring(2), "hex"));
-
-  // Return Public Key dalam format Hex (tanpa 0x biasanya lebih baik untuk eciesjs)
-  return privKey.publicKey.toHex();
-};
-
-const connect = async (): Promise<void> => {
-  const provider = await getProvider();
-  await store.connectMetaMask(provider);
-
-  if (isAuthenticated) router.push("/");
-};
-
 const onSubmit = async (event: FormSubmitEvent<Schema>): Promise<void> => {
-  const provider = await getProvider();
-  if (!provider) {
-    alert.value = { show: true, message: "MetaMask tidak ditemukan" };
-    return;
-  }
-
-  const encryptionPublicKey = await getEncryptionPublicKey();
-
-  const payload = {
-    ...event.data,
-    publicKey: encryptionPublicKey,
-  };
-
-  const { status, message } = await store.register(payload);
+  const { status, message } = await store.register(event.data);
   alert.value = {
     show: status === "error" ? true : false,
     message,
