@@ -3,13 +3,30 @@ import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import ui from "@nuxt/ui/vite";
+import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     tailwindcss(),
-    ui(),
+    ui({
+      colorMode: false,
+      ui: {
+        colors: {
+          primary: "green",
+          warning: "yellow",
+          secondary: "white",
+          info: "blue",
+          dark: "dark",
+          text: "text",
+          secondText: "secondText",
+        },
+        skeleton: {
+          base: "animate-pulse rounded-md bg-slate-200",
+        },
+      },
+    }),
     VitePWA({
       registerType: "prompt",
       injectRegister: false,
@@ -20,9 +37,9 @@ export default defineConfig({
       },
 
       manifest: {
-        name: "polyland-app",
-        short_name: "polyland-app",
-        description: "polyland-app",
+        name: "jejak-tanah",
+        short_name: "jejak-tanah",
+        description: "jejak-tanah",
         theme_color: "#ffffff",
       },
 
@@ -42,5 +59,10 @@ export default defineConfig({
   ],
   define: {
     global: "globalThis",
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
   },
 });

@@ -22,11 +22,14 @@ declare global {
   const inputIdInjectionKey: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useFormField.js').inputIdInjectionKey
   const kbdKeysMap: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useKbd.js').kbdKeysMap
   const localeContextInjectionKey: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useLocale.js').localeContextInjectionKey
+  const options: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useResizable.js').options
   const portalTargetInjectionKey: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/usePortal.js').portalTargetInjectionKey
+  const provideThemeContext: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useComponentUI.js').provideThemeContext
   const toastMaxInjectionKey: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useToast.js').toastMaxInjectionKey
   const useAppConfig: typeof import('./node_modules/@nuxt/ui/dist/runtime/vue/composables/useAppConfig.js').useAppConfig
   const useAvatarGroup: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useAvatarGroup.js').useAvatarGroup
   const useComponentIcons: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useComponentIcons.js').useComponentIcons
+  const useComponentUI: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useComponentUI.js').useComponentUI
   const useContentSearch: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useContentSearch.js').useContentSearch
   const useEditorMenu: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useEditorMenu.js').useEditorMenu
   const useFieldGroup: typeof import('./node_modules/@nuxt/ui/dist/runtime/composables/useFieldGroup.js').useFieldGroup
@@ -48,6 +51,9 @@ declare global {
   // @ts-ignore
   export type { UseComponentIconsProps } from './node_modules/@nuxt/ui/dist/runtime/composables/useComponentIcons.d'
   import('./node_modules/@nuxt/ui/dist/runtime/composables/useComponentIcons.d')
+  // @ts-ignore
+  export type { ThemeUI, ThemeRootContext } from './node_modules/@nuxt/ui/dist/runtime/composables/useComponentUI.d'
+  import('./node_modules/@nuxt/ui/dist/runtime/composables/useComponentUI.d')
   // @ts-ignore
   export type { EditorMenuOptions } from './node_modules/@nuxt/ui/dist/runtime/composables/useEditorMenu.d'
   import('./node_modules/@nuxt/ui/dist/runtime/composables/useEditorMenu.d')
