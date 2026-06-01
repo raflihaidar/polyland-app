@@ -28,8 +28,8 @@ export default defineConfig({
       },
     }),
     VitePWA({
-      registerType: "prompt",
-      injectRegister: false,
+      registerType: "autoUpdate", // Mengganti 'prompt' ke 'autoUpdate' agar sw langsung aktif
+      injectRegister: "auto",      // <--- UBAH DARI false MENJADI "auto"
 
       pwaAssets: {
         disabled: false,
@@ -41,17 +41,32 @@ export default defineConfig({
         short_name: "jejak-tanah",
         description: "jejak-tanah",
         theme_color: "#ffffff",
+        background_color: "#ffffff",
+        display: "standalone",    // <--- WAJIB: Agar bisa diinstall di HP
+        start_url: "/",           // <--- Direkomendasikan
+        icons: [                  // <--- WAJIB: Sediakan ikon minimal ukuran ini
+          {
+            src: "pwa-192x192.png", // Sesuaikan dengan nama & lokasi ikon Anda di folder public
+            sizes: "192x192",
+            type: "image/png"
+          },
+          {
+            src: "pwa-512x512.png", // Sesuaikan dengan nama & lokasi ikon Anda di folder public
+            sizes: "512x512",
+            type: "image/png"
+          }
+        ]
       },
 
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        maximumFileSizeToCacheInBytes: 4000000 
+        maximumFileSizeToCacheInBytes: 4000000
       },
 
       devOptions: {
-        enabled: false,
+        enabled: true, // <--- SEMENTARA ubah ke true untuk testing di mode development (npm run dev)
         navigateFallback: "index.html",
         suppressWarnings: true,
         type: "module",
