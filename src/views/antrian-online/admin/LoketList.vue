@@ -1,19 +1,6 @@
-<script setup lang="ts">
-import { useApiPrivate } from "@/composables/useApi";
+<!-- <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth.store";
-import { onMounted, ref } from "vue";
-
-const authStore = useAuthStore();
-
-const cards = ref([
-  {
-    title: "Loket Peralihan Hak tanpa Perantara",
-    description:
-      "Loket untuk mengajukan layanan peralihan hak sertifikat tanah",
-    icon: "i-lucide-smile",
-    to: "/admin/antrian-online/list-antrian",
-  },
-]);
+import { ref } from "vue";
 </script>
 
 <template>
@@ -40,4 +27,4 @@ const cards = ref([
       </UPageGrid>
     </template>
   </UDashboardPanel>
-</template>
+</template> -->

@@ -99,8 +99,8 @@ const stepSchemas = [
 const stepValidity = ref([false, false]);
 
 const validateStep = (index: number) => {
-  const result = stepSchemas[index].safeParse(form);
-  stepValidity.value[index] = result.success;
+  const result = stepSchemas[index]?.safeParse(form);
+  stepValidity.value[index] = result?.success || true ;
 };
 
 watch(
@@ -146,9 +146,9 @@ const handleStepChange = (step: number) => {
 };
 
 const nextStep = async () => {
-  const result = stepSchemas[currentStep.value].safeParse(form);
+  const result = stepSchemas[currentStep.value]?.safeParse(form);
 
-  if (!result.success) {
+  if (!result?.success) {
     await formRef.value.validate();
     return;
   }

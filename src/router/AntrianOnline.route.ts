@@ -17,13 +17,13 @@ export const antrianOnlineRoutes = [
           import("@/views/antrian-online/components/Section/FormCreateAntrian.vue"),
         meta: { title: "Buat Antrian" },
       },
-      {
-        path: "loket",
-        name: "antrian-online.loket",
-        component: () =>
-          import("@/views/antrian-online/components/Section/LoketList.vue"),
-        meta: { title: "Daftar Loket" },
-      },
+      // {
+      //   path: "loket",
+      //   name: "antrian-online.loket",
+      //   component: () =>
+      //     import("@/views/antrian-online/components/Section/LoketList.vue"),
+      //   meta: { title: "Daftar Loket" },
+      // },
     ],
     meta: { requiresAuth: true },
   },

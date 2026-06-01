@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useRoute } from "vue-router";
 import type { NavigationMenuItem } from "@nuxt/ui";
-
-const route = useRoute();
 
 const open = ref(false);
 
