@@ -135,20 +135,31 @@ export const useAuthStore = defineStore(
           throw new Error("MetaMask provider tidak ditemukan");
         }
 
+        // 1. SOLUSI UTAMA: Paksa MetaMask memunculkan pop-up pilihan akun untuk sinkronisasi
+        await provider.request({
+          method: "wallet_requestPermissions",
+          params: [{ eth_accounts: {} }],
+        });
+
+        // 2. Ambil alamat akun yang baru saja dipilih/diizinkan oleh user
         const addresses = (await provider.request({
-          method: "eth_requestAccounts",
+          method: "eth_accounts",
         })) as string[];
 
         const walletAddress = addresses?.[0];
+        console.log("Wallet address aktif terdeteksi:", walletAddress);
 
         if (!walletAddress) {
-          throw new Error("Wallet not connected");
+          throw new Error("Wallet tidak terhubung");
         }
 
+        // 3. Ambil nonce dari backend menggunakan alamat yang valid & aktif
         const { message } = await requestWalletNonce(walletAddress);
 
-        const signature = await signLoginMessage(message);
+        // 4. PERBAIKAN: Kirim walletAddress ke fungsi sign agar viem mereferensikan akun yang tepat
+        const signature = await signLoginMessage(message, walletAddress);
 
+        // 5. Kirim data ke backend untuk diverifikasi
         const { data } = await verifyWalletLogin(walletAddress, signature);
 
         return {
@@ -156,10 +167,10 @@ export const useAuthStore = defineStore(
           message: data.message,
         };
       } catch (err: any) {
-        console.error(err);
+        console.error("Error pada connectMetaMask store:", err);
         return {
           status: "error",
-          message: "Gagal login dengan Metamask",
+          message: err.message || "Gagal login dengan Metamask",
         };
       } finally {
         stopLoading("CONNECT_WALLET");

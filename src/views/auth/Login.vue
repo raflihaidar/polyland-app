@@ -1,20 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useAuthStore } from "../../stores/auth.store";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import { MetaMaskSDK } from "@metamask/sdk";
 import * as z from "zod";
-import { PrivateKey } from "eciesjs";
-import { Buffer } from "buffer";
-import { keccak256 } from "viem";
-import { getAccount, walletClient } from "@/lib/walletClient";
 
 const error = ref<string | null>(null);
 const store = useAuthStore();
 const { isAuthenticated, isMetaMaskSupported } = storeToRefs(store);
 const router = useRouter();
+
 const form = ref<Partial<Schema>>({
   email: "",
   password: "",
@@ -32,59 +29,71 @@ const schema = z.object({
 type Schema = z.output<typeof schema>;
 const openModal = ref<boolean>(false);
 
-const mmsdk = new MetaMaskSDK({
-  dappMetadata: {
-    name: "Jejak Tanahku",
-    url: window.location.href,
-  },
-});
+// Deklarasikan mmsdk sebagai let agar aman dari SSR Nuxt
+let mmsdk: MetaMaskSDK | null = null;
 
 const getProvider = async () => {
   if (typeof window !== "undefined" && window.ethereum) {
     return window.ethereum;
   }
 
-  // fallback ke SDK (mobile / PWA)
-  await mmsdk.connect();
-  return mmsdk.getProvider();
+  // Lazy-load SDK jika di lingkungan client browser
+  if (!mmsdk && typeof window !== "undefined") {
+    mmsdk = new MetaMaskSDK({
+      dappMetadata: {
+        name: "Jejak Tanahku",
+        url: window.location.href,
+      },
+    });
+  }
+
+  if (mmsdk) {
+    await mmsdk.connect();
+    return mmsdk.getProvider();
+  }
+
+  throw new Error("MetaMask Provider tidak ditemukan");
 };
 
-const getEncryptionPublicKey = async () => {
-  const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
-
-  const account = await getAccount();
-
-  // 3. Minta Signature menggunakan viem
-  const signature = await walletClient().signMessage({
-    account: account as `0x${string}`,
-    message: message,
-  });
-
-  // 4. Hash signature menggunakan keccak256 dari viem untuk entropy 32-byte
-  const entropy = keccak256(signature);
-
-  // 5. Generate KeyPair menggunakan eciesjs
-  // Hapus '0x' dan ubah ke Buffer
-  const privKey = new PrivateKey(Buffer.from(entropy.substring(2), "hex"));
-
-  // Return Public Key dalam format Hex (tanpa 0x biasanya lebih baik untuk eciesjs)
-  return privKey.publicKey.toHex();
+// Handler ketika user mengganti akun langsung di ekstensi MetaMask
+const handleAccountsChanged = async (accounts: unknown) => {
+  const accountArray = accounts as string[];
+  if (accountArray.length === 0) {
+    console.log("MetaMask terputus atau dikunci.");
+    // Kamu bisa panggil store.logout() di sini jika diperlukan
+  } else {
+    console.log("Akun berubah dari ekstensi ke:", accountArray[0]);
+    try {
+      // Hubungkan ulang secara otomatis agar state di Pinia langsung sinkron
+      const provider = await getProvider();
+      await store.connectMetaMask(provider);
+    } catch (err) {
+      console.error("Gagal sinkronisasi otomatis akun baru:", err);
+    }
+  }
 };
+
+// Siklus hidup komponen untuk memasang event listener MetaMask
+onMounted(async () => {
+  if (typeof window !== "undefined" && window.ethereum) {
+    window.ethereum.on("accountsChanged", handleAccountsChanged);
+  }
+});
+
+onUnmounted(() => {
+  if (
+    typeof window !== "undefined" &&
+    window.ethereum &&
+    window.ethereum.removeListener
+  ) {
+    window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+  }
+});
 
 const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
-  // console.log("login");
-  // const provider = await getProvider();
-  // if (!provider) {
-  //   alert.value = { show: true, message: "MetaMask tidak ditemukan" };
-  //   return;
-  // }
-
-  // const encryptionPublicKey = await getEncryptionPublicKey();
-  // console.log("encrypt public key : ", encryptionPublicKey);
-  // return;
   const { status, message } = await store.login(event.data);
   alert.value = {
-    show: status === "error" ? true : false,
+    show: status === "error",
     message,
   };
 
@@ -94,17 +103,28 @@ const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
 const connect = async (): Promise<void> => {
   if (!isMetaMaskSupported.value) {
     openModal.value = true;
+    return;
   }
 
-  const provider = await getProvider();
-  const { status, message } = await store.connectMetaMask(provider);
+  try {
+    const provider = await getProvider();
+    const { status, message } = await store.connectMetaMask(provider);
 
-  alert.value = {
-    show: status === "error" ? true : false,
-    message,
-  };
+    alert.value = {
+      show: status === "error",
+      message,
+    };
 
-  if (isAuthenticated) router.push("/");
+    // PERBAIKAN: Gunakan .value karena isAuthenticated didapat dari storeToRefs
+    if (status === "success" && isAuthenticated.value) {
+      router.push("/");
+    }
+  } catch (err: any) {
+    alert.value = {
+      show: true,
+      message: err.message || "Gagal terhubung ke MetaMask",
+    };
+  }
 };
 </script>
 
