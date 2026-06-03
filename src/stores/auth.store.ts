@@ -119,12 +119,12 @@ export const useAuthStore = defineStore(
       walletAddress: string,
       signature: string,
     ) => {
-      const { data } = await useApi().post("/auth/wallet/verify", {
+      const res = await useApi().post("/auth/wallet/verify", {
         walletAddress,
         signature,
       });
 
-      return data;
+      return res;
     };
 
     const connectMetaMask = async (provider: any) => {
@@ -147,7 +147,6 @@ export const useAuthStore = defineStore(
         })) as string[];
 
         const walletAddress = addresses?.[0];
-        console.log("Wallet address aktif terdeteksi:", walletAddress);
 
         if (!walletAddress) {
           throw new Error("Wallet tidak terhubung");
@@ -163,11 +162,10 @@ export const useAuthStore = defineStore(
         const { data } = await verifyWalletLogin(walletAddress, signature);
 
         return {
-          status: data.success,
+          status: data.status,
           message: data.message,
         };
       } catch (err: any) {
-        console.error("Error pada connectMetaMask store:", err);
         return {
           status: "error",
           message: err.message || "Gagal login dengan Metamask",

@@ -115,8 +115,7 @@ const connect = async (): Promise<void> => {
       message,
     };
 
-    // PERBAIKAN: Gunakan .value karena isAuthenticated didapat dari storeToRefs
-    if (status === "success" && isAuthenticated.value) {
+    if (status === "success") {
       router.push("/");
     }
   } catch (err: any) {
@@ -124,6 +123,8 @@ const connect = async (): Promise<void> => {
       show: true,
       message: err.message || "Gagal terhubung ke MetaMask",
     };
+  } finally {
+    openModal.value = false;
   }
 };
 </script>

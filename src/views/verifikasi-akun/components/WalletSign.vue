@@ -5,9 +5,9 @@ import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import { useAccountStore } from "../../../stores/account.store";
 import type { VerifikasiSchema } from "../VerifikasiAkun.vue";
 import type { Ref } from "vue";
+import { MetaMaskSDK } from "@metamask/sdk";
 import { PrivateKey } from "eciesjs";
 import { keccak256 } from "viem";
-import { getAccount, walletClient } from "@/lib/walletClient";
 
 const router = useRouter();
 const toast = useToast();
@@ -18,68 +18,69 @@ const form = inject<Ref<Partial<VerifikasiSchema>>>("verifikasi-form")!;
 const publicKey = ref<string | null>(null);
 const walletAddress = ref<`0x${string}` | null>(null);
 const isConnecting = ref(false);
-
-const isMetaMaskInstalled = computed(
-  () => typeof window.ethereum !== "undefined" && window.ethereum.isMetaMask,
-);
 const isConnected = computed(() => publicKey.value !== null);
 
+let mmsdk: MetaMaskSDK | null = null;
+
+const getProvider = async () => {
+  if (!mmsdk && typeof window !== "undefined") {
+    mmsdk = new MetaMaskSDK({
+      dappMetadata: {
+        name: "Jejak Tanahku",
+        url: window.location.href,
+      },
+    });
+  }
+
+  if (mmsdk) {
+    await mmsdk.connect();
+    return mmsdk.getProvider();
+  }
+
+  throw new Error("MetaMask Provider tidak ditemukan");
+};
+
 const getEncryptionPublicKey = async () => {
+  const provider = await getProvider();
+
+  const accounts = (await provider!.request({
+    method: "eth_requestAccounts",
+  })) as string[];
+
+  const account = accounts[0] as `0x${string}`;
   const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
 
-  const account = await getAccount();
+  const signature = (await provider!.request({
+    method: "personal_sign",
+    params: [message, account],
+  })) as `0x${string}`;
 
-  // 3. Minta Signature menggunakan viem
-  const signature = await walletClient().signMessage({
-    account: account as `0x${string}`,
-    message: message,
-  });
-
-  // 4. Hash signature menggunakan keccak256 dari viem untuk entropy 32-byte
   const entropy = keccak256(signature);
-
-  // 5. Generate KeyPair menggunakan eciesjs
-  // Hapus '0x' dan ubah ke Buffer
   const privKey = new PrivateKey(Buffer.from(entropy.substring(2), "hex"));
 
-  // Return Public Key dalam format Hex (tanpa 0x biasanya lebih baik untuk eciesjs)
-  return {
-    key: privKey.publicKey.toHex(),
-    account: account,
-  };
+  return { key: privKey.publicKey.toHex(), account };
 };
 
 const connectWallet = async (): Promise<void> => {
-  if (!isMetaMaskInstalled.value) {
-    toast.add({
-      title: "MetaMask tidak ditemukan",
-      description: "Silahkan install ekstensi MetaMask terlebih dahulu",
-      color: "error",
-    });
-    return;
-  }
-
   isConnecting.value = true;
   try {
     const { key, account } = await getEncryptionPublicKey();
     publicKey.value = key;
-    walletAddress.value = account!;
+    walletAddress.value = account;
 
     toast.add({
       title: "Wallet terhubung",
-      description: `Berhasil terhubung ke}`,
+      description: `Berhasil terhubung ke ${account.slice(0, 6)}...${account.slice(-4)}`,
       color: "success",
     });
   } catch (err: unknown) {
     const error = err as { code?: number; message?: string };
-    const message =
-      error.code === 4001
-        ? "Koneksi ditolak oleh pengguna"
-        : (error.message ?? "Gagal menghubungkan wallet");
-
     toast.add({
       title: "Koneksi gagal",
-      description: message,
+      description:
+        error.code === 4001
+          ? "Koneksi ditolak oleh pengguna"
+          : (error.message ?? "Gagal menghubungkan wallet"),
       color: "error",
     });
   } finally {
@@ -121,26 +122,17 @@ const submitAll = async (): Promise<void> => {
       class="mb-4"
     />
 
-    <!-- Step 1: Connect Wallet -->
+    <!-- Connect Wallet -->
     <div class="space-y-2">
-      <div v-if="!isMetaMaskInstalled">
-        <p class="text-sm text-red-500">MetaMask belum terpasang.</p>
-        <a
-          href="https://metamask.io/download/"
-          target="_blank"
-          class="text-sm text-primary underline"
-        >
-          Install MetaMask
-        </a>
-      </div>
-
-      <div v-else-if="isConnected" class="text-sm text-green-600">
-        ✓ Berhasil menghubungkan wallet
+      <div v-if="isConnected" class="text-sm text-green-600">
+        ✓ Berhasil menghubungkan wallet — {{ walletAddress?.slice(0, 6) }}...{{
+          walletAddress?.slice(-4)
+        }}
       </div>
 
       <UButton
-        block
         v-else
+        block
         variant="solid"
         icon="token-branded:metamask"
         label="Hubungkan MetaMask"
