@@ -101,11 +101,6 @@ const login = async (event: FormSubmitEvent<Schema>): Promise<void> => {
 };
 
 const connect = async (): Promise<void> => {
-  if (!isMetaMaskSupported.value) {
-    openModal.value = true;
-    return;
-  }
-
   try {
     const provider = await getProvider();
     const { status, message } = await store.connectMetaMask(provider);
@@ -123,8 +118,6 @@ const connect = async (): Promise<void> => {
       show: true,
       message: err.message || "Gagal terhubung ke MetaMask",
     };
-  } finally {
-    openModal.value = false;
   }
 };
 </script>
