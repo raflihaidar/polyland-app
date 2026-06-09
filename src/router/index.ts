@@ -11,6 +11,7 @@ import { sertifikatRoutes } from "./Sertifikat.route";
 import { verifikasiAkunRoutes } from "./VerifikasiAkun.route";
 import { antrianOnlineRoutes, adminAntrianOnline } from "./AntrianOnline.route";
 import { peralihanHakRoutes } from "./PeralihanHak.route";
+import { hakAksesRoutes } from "./HakAkses.route";
 
 const routes = [
   {
@@ -78,6 +79,7 @@ const routes = [
       },
       ...adminAntrianOnline,
       ...peralihanHakRoutes,
+      ...hakAksesRoutes,
     ],
   },
   {

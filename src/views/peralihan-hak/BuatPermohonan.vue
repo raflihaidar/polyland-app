@@ -438,25 +438,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UDashboardPanel id="peralihan-hak-form">
-    <template #header>
-      <UDashboardNavbar
-        :title="
-          editMode
-            ? 'Edit Permohonan Peralihan Hak'
-            : isViewMode
-              ? 'Detail Permohonan Peralihan Hak'
-              : 'Buat Permohonan Peralihan Hak'
-        "
-      >
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <div
+       <div
         v-if="isLoading && isViewMode && !editMode"
         class="flex items-center justify-center py-32"
       >
@@ -1298,6 +1280,4 @@ onMounted(async () => {
           </div>
         </template>
       </div>
-    </template>
-  </UDashboardPanel>
 </template>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { NavigationMenuItem } from "@nuxt/ui";
+import { useRoute } from "vue-router";
+// import UserMenu from "@/components/UserMenu.vue";
 
+const route = useRoute();
 const open = ref(false);
 
 const links = [
@@ -16,19 +19,19 @@ const links = [
     },
     {
       label: "Antrian Online",
-      // to: "/admin/antrian-online",
+      to: "/admin/antrian-online",
       icon: "fluent:people-queue-32-regular",
       defaultOpen: false,
       type: "trigger",
       children: [
-        // {
-        //   label: "Dashboard",
-        //   to: "/admin/antrian-online/dashboard",
-        //   exact: true,
-        //   onSelect: () => {
-        //     open.value = false;
-        //   },
-        // },
+        {
+          label: "Dashboard",
+          to: "/admin/antrian-online/dashboard",
+          exact: true,
+          onSelect: () => {
+            open.value = false;
+          },
+        },
         {
           label: "Antrian",
           to: "/admin/antrian-online/list",
@@ -39,20 +42,20 @@ const links = [
       ],
     },
     {
-      label: "Layanan Peralihan Hak",
+      label: "Peralihan Hak",
       to: "/admin/peralihan-hak",
-      icon: "i-lucide-settings",
+      icon: "grommet-icons:document-transfer",
       defaultOpen: false,
       type: "trigger",
       children: [
-        // {
-        //   label: "Dashboard",
-        //   to: "/admin/peralihan-hak/dashboard",
-        //   exact: true,
-        //   onSelect: () => {
-        //     open.value = false;
-        //   },
-        // },
+        {
+          label: "Dashboard",
+          to: "/admin/peralihan-hak/dashboard",
+          exact: true,
+          onSelect: () => {
+            open.value = false;
+          },
+        },
         {
           label: "Permohonan",
           to: "/admin/peralihan-hak/list-permohonan",
@@ -64,23 +67,23 @@ const links = [
       ],
     },
     {
-      label: "Kelola Hak Akses",
+      label: "Hak Akses",
       to: "/admin/hak-akses",
       icon: "i-lucide-settings",
       defaultOpen: false,
       type: "trigger",
       children: [
         {
-          label: "Roles",
-          to: "/settings",
-          exact: true,
+          label: "Users",
+          to: "/admin/hak-akses/users",
           onSelect: () => {
             open.value = false;
           },
         },
         {
-          label: "Users",
-          to: "/settings/members",
+          label: "Roles",
+          to: "/settings",
+          exact: true,
           onSelect: () => {
             open.value = false;
           },
@@ -123,12 +126,25 @@ const links = [
         />
       </template>
 
-      <template #footer="{ collapsed }">
+      <!-- <template #footer="{ collapsed }">
         <UserMenu :collapsed="collapsed" />
-      </template>
+      </template> -->
     </UDashboardSidebar>
 
-    <RouterView />
+    <UDashboardPanel :id="route.name">
+      <template #header>
+        <UDashboardNavbar :title="route.meta?.title">
+          <template #leading>
+            <UDashboardSidebarCollapse />
+          </template>
+        </UDashboardNavbar>
+      </template>
+
+      <template #body>
+        <RouterView />
+      </template>
+    </UDashboardPanel>
+
     <NotificationsSlideover />
   </UDashboardGroup>
 </template>

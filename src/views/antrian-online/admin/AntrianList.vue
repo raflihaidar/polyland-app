@@ -343,163 +343,151 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UDashboardPanel id="queues">
-    <template #header>
-      <UDashboardNavbar title="Daftar Antrian">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <!-- Filter Bar -->
-      <div class="flex flex-wrap items-center justify-between gap-1.5">
-        <div class="flex items-center gap-x-3">
-          <!-- Search Input -->
-          <UInput
-            v-model="searchQuery"
-            class="max-w-sm"
-            icon="i-lucide-search"
-            placeholder="Cari nama pemohon..."
-          />
-
-          <!-- Loket Selector -->
-          <UPopover
-            :content="{
-              align: 'start',
-              side: 'bottom',
-              sideOffset: 8,
-            }"
-            v-if="loketList.length > 0"
-          >
-            <UButton
-              color="neutral"
-              variant="subtle"
-              icon="material-symbols:wifi-home-outline-rounded"
-            />
-            <template #content>
-              <div class="p-4">
-                <p class="text-lg font-medium">Loket</p>
-                <p class="text-xs">Loket anda saat ini</p>
-                <div class="flex flex-col gap-1 min-w-40 mt-3">
-                  <URadioGroup
-                    v-model="selectedLoket"
-                    :items="loketList"
-                    value-key="id"
-                    label-key="name"
-                    class="border-2 border-primary p-2 rounded-lg"
-                  />
-                </div>
-              </div>
-            </template>
-          </UPopover>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-1.5">
-          <!-- Date Filter -->
-          <UInput
-            v-model="selectedDate"
-            type="date"
-            icon="i-lucide-calendar"
-            placeholder="Filter tanggal..."
-          />
-
-          <!-- Status Filter -->
-          <USelect
-            v-model="statusFilter"
-            :items="[
-              { label: 'Semua', value: 'all' },
-              { label: 'Menunggu', value: 'MENUNGGU' },
-              { label: 'Dipanggil', value: 'DIPANGGIL' },
-              { label: 'Selesai', value: 'SELESAI' },
-              { label: 'Tidak Hadir', value: 'TIDAK_HADIR' },
-            ]"
-            :ui="{
-              trailingIcon:
-                'group-data-[state=open]:rotate-180 transition-transform duration-200',
-            }"
-            placeholder="Filter status"
-            class="min-w-36"
-          />
-
-          <!-- Column Visibility -->
-          <UDropdownMenu
-            :items="
-              table?.tableApi
-                ?.getAllColumns()
-                .filter((column: any) => column.getCanHide())
-                .map((column: any) => ({
-                  label: upperFirst(column.id),
-                  type: 'checkbox' as const,
-                  checked: column.getIsVisible(),
-                  onUpdateChecked(checked: boolean) {
-                    table?.tableApi
-                      ?.getColumn(column.id)
-                      ?.toggleVisibility(!!checked);
-                  },
-                  onSelect(e?: Event) {
-                    e?.preventDefault();
-                  },
-                }))
-            "
-            :content="{ align: 'end' }"
-          >
-            <UButton
-              label="Tampilan"
-              color="neutral"
-              variant="outline"
-              trailing-icon="i-lucide-settings-2"
-            />
-          </UDropdownMenu>
-        </div>
-      </div>
-
-      <!-- Table -->
-      <UTable
-        ref="table"
-        v-model:column-filters="columnFilters"
-        v-model:column-visibility="columnVisibility"
-        v-model:row-selection="rowSelection"
-        v-model:pagination="pagination"
-        :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel(),
-        }"
-        class="shrink-0"
-        :data="queueList"
-        :columns="columns"
-        :loading="isLoading"
-        :ui="{
-          base: 'table-fixed border-separate border-spacing-0',
-          thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
-          tbody: '[&>tr]:last:[&>td]:border-b-0',
-          th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-          td: 'border-b border-default',
-          separator: 'h-0',
-        }"
+  <!-- Filter Bar -->
+  <div class="flex flex-wrap items-center justify-between gap-1.5">
+    <div class="flex items-center gap-x-3">
+      <!-- Search Input -->
+      <UInput
+        v-model="searchQuery"
+        class="max-w-sm"
+        icon="i-lucide-search"
+        placeholder="Cari nama pemohon..."
       />
 
-      <!-- Pagination & Info -->
-      <div
-        class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto"
+      <!-- Loket Selector -->
+      <UPopover
+        :content="{
+          align: 'start',
+          side: 'bottom',
+          sideOffset: 8,
+        }"
+        v-if="loketList.length > 0"
       >
-        <div class="text-sm text-muted">
-          Total
-          <span class="font-semibold text-highlighted">
-            {{ serverPagination.total }}
-          </span>
-          antrian
-        </div>
+        <UButton
+          color="neutral"
+          variant="subtle"
+          icon="material-symbols:wifi-home-outline-rounded"
+        />
+        <template #content>
+          <div class="p-4">
+            <p class="text-lg font-medium">Loket</p>
+            <p class="text-xs">Loket anda saat ini</p>
+            <div class="flex flex-col gap-1 min-w-40 mt-3">
+              <URadioGroup
+                v-model="selectedLoket"
+                :items="loketList"
+                value-key="id"
+                label-key="name"
+                class="border-2 border-primary p-2 rounded-lg"
+              />
+            </div>
+          </div>
+        </template>
+      </UPopover>
+    </div>
 
-        <div class="flex items-center gap-1.5">
-          <UPagination
-            :default-page="serverPagination.page"
-            :items-per-page="serverPagination.limit"
-            :total="serverPagination.total"
-            @update:page="goToPage"
-          />
-        </div>
-      </div>
-    </template>
-  </UDashboardPanel>
+    <div class="flex flex-wrap items-center gap-1.5">
+      <!-- Date Filter -->
+      <UInput
+        v-model="selectedDate"
+        type="date"
+        icon="i-lucide-calendar"
+        placeholder="Filter tanggal..."
+      />
+
+      <!-- Status Filter -->
+      <USelect
+        v-model="statusFilter"
+        :items="[
+          { label: 'Semua', value: 'all' },
+          { label: 'Menunggu', value: 'MENUNGGU' },
+          { label: 'Dipanggil', value: 'DIPANGGIL' },
+          { label: 'Selesai', value: 'SELESAI' },
+          { label: 'Tidak Hadir', value: 'TIDAK_HADIR' },
+        ]"
+        :ui="{
+          trailingIcon:
+            'group-data-[state=open]:rotate-180 transition-transform duration-200',
+        }"
+        placeholder="Filter status"
+        class="min-w-36"
+      />
+
+      <!-- Column Visibility -->
+      <UDropdownMenu
+        :items="
+          table?.tableApi
+            ?.getAllColumns()
+            .filter((column: any) => column.getCanHide())
+            .map((column: any) => ({
+              label: upperFirst(column.id),
+              type: 'checkbox' as const,
+              checked: column.getIsVisible(),
+              onUpdateChecked(checked: boolean) {
+                table?.tableApi
+                  ?.getColumn(column.id)
+                  ?.toggleVisibility(!!checked);
+              },
+              onSelect(e?: Event) {
+                e?.preventDefault();
+              },
+            }))
+        "
+        :content="{ align: 'end' }"
+      >
+        <UButton
+          label="Tampilan"
+          color="neutral"
+          variant="outline"
+          trailing-icon="i-lucide-settings-2"
+        />
+      </UDropdownMenu>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <UTable
+    ref="table"
+    v-model:column-filters="columnFilters"
+    v-model:column-visibility="columnVisibility"
+    v-model:row-selection="rowSelection"
+    v-model:pagination="pagination"
+    :pagination-options="{
+      getPaginationRowModel: getPaginationRowModel(),
+    }"
+    class="shrink-0"
+    :data="queueList"
+    :columns="columns"
+    :loading="isLoading"
+    :ui="{
+      base: 'table-fixed border-separate border-spacing-0',
+      thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+      tbody: '[&>tr]:last:[&>td]:border-b-0',
+      th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
+      td: 'border-b border-default',
+      separator: 'h-0',
+    }"
+  />
+
+  <!-- Pagination & Info -->
+  <div
+    class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto"
+  >
+    <div class="text-sm text-muted">
+      Total
+      <span class="font-semibold text-highlighted">
+        {{ serverPagination.total }}
+      </span>
+      antrian
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <UPagination
+        :default-page="serverPagination.page"
+        :items-per-page="serverPagination.limit"
+        :total="serverPagination.total"
+        @update:page="goToPage"
+      />
+    </div>
+  </div>
 </template>

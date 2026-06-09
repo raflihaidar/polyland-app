@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  useTemplateRef,
-  h,
-  ref,
-  watch,
-  resolveComponent,
-  onMounted,
-} from "vue";
-import { upperFirst } from "scule";
+import { h, ref, watch, resolveComponent, onMounted } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import { getPaginationRowModel, type Row } from "@tanstack/table-core";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
@@ -17,11 +9,9 @@ import { useRouter } from "vue-router";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
 
 const router = useRouter();
 const toast = useToast();
-const table = useTemplateRef("table");
 const authStore = useAuthStore();
 const isLoading = ref<boolean>(false);
 const applicationList = ref<any[]>([]);
@@ -332,118 +322,49 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- Filter Bar -->
-  <div class="flex flex-wrap items-center justify-between gap-1.5">
-    <div class="flex items-center gap-x-3">
-      <!-- Search Input -->
-      <UInput
-        v-model="searchQuery"
-        class="max-w-sm"
-        icon="i-lucide-search"
-        placeholder="Cari nama pemohon / NIB..."
-      />
-    </div>
+  <div class="mt-5">
+    <UTable
+      ref="table"
+      v-model:column-filters="columnFilters"
+      v-model:column-visibility="columnVisibility"
+      v-model:row-selection="rowSelection"
+      v-model:pagination="pagination"
+      :pagination-options="{
+        getPaginationRowModel: getPaginationRowModel(),
+      }"
+      class="shrink-0"
+      :data="applicationList"
+      :columns="columns"
+      :loading="isLoading"
+      :ui="{
+        base: 'table-fixed border-separate border-spacing-0',
+        thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+        tbody: '[&>tr]:last:[&>td]:border-b-0',
+        th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
+        td: 'border-b border-default',
+        separator: 'h-0',
+      }"
+    />
 
-    <div class="flex flex-wrap items-center gap-1.5">
-      <!-- Date Filter -->
-      <UInput
-        v-model="selectedDate"
-        type="date"
-        icon="i-lucide-calendar"
-        placeholder="Filter tanggal..."
-      />
+    <div
+      class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto"
+    >
+      <div class="text-sm text-muted">
+        Total
+        <span class="font-semibold text-highlighted">
+          {{ serverPagination.total }}
+        </span>
+        permohonan
+      </div>
 
-      <!-- Type Filter -->
-      <USelect
-        v-model="typeFilter"
-        :items="[
-          { label: 'Semua Tipe', value: 'all' },
-          { label: 'SHM', value: 'SHM' },
-          { label: 'SHGB', value: 'SHGB' },
-          { label: 'SHGU', value: 'SHGU' },
-        ]"
-        :ui="{
-          trailingIcon:
-            'group-data-[state=open]:rotate-180 transition-transform duration-200',
-        }"
-        placeholder="Tipe Sertifikat"
-        class="min-w-40"
-      />
-
-      <!-- Status Filter -->
-      <USelect
-        v-model="statusFilter"
-        :items="[
-          { label: 'Semua Status', value: 'all' },
-          { label: 'Diproses', value: 'DIPROSES' },
-          { label: 'Verifikasi Berkas', value: 'VERIFIKASI_BERKAS' },
-          { label: 'Menunggu Pembayaran', value: 'MENUNGGU_PEMBAYARAN' },
-          { label: 'Penandatanganan', value: 'PENANDATANGANAN' },
-          { label: 'Ditolak', value: 'DITOLAK' },
-          { label: 'Selesai', value: 'SELESAI' },
-        ]"
-        :ui="{
-          trailingIcon:
-            'group-data-[state=open]:rotate-180 transition-transform duration-200',
-        }"
-        placeholder="Filter status"
-        class="min-w-44"
-      />
-
-      <!-- Tambah Permohonan -->
-      <UButton
-        label="Buat Permohonan"
-        icon="i-lucide-plus"
-        color="primary"
-        class="min-w-44"
-        @click="router.push('/admin/peralihan-hak/create')"
-      />
-    </div>
-  </div>
-
-  <!-- Table -->
-  <UTable
-    ref="table"
-    v-model:column-filters="columnFilters"
-    v-model:column-visibility="columnVisibility"
-    v-model:row-selection="rowSelection"
-    v-model:pagination="pagination"
-    :pagination-options="{
-      getPaginationRowModel: getPaginationRowModel(),
-    }"
-    class="shrink-0"
-    :data="applicationList"
-    :columns="columns"
-    :loading="isLoading"
-    :ui="{
-      base: 'table-fixed border-separate border-spacing-0',
-      thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
-      tbody: '[&>tr]:last:[&>td]:border-b-0',
-      th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
-      td: 'border-b border-default',
-      separator: 'h-0',
-    }"
-  />
-
-  <!-- Pagination & Info -->
-  <div
-    class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto"
-  >
-    <div class="text-sm text-muted">
-      Total
-      <span class="font-semibold text-highlighted">
-        {{ serverPagination.total }}
-      </span>
-      permohonan
-    </div>
-
-    <div class="flex items-center gap-1.5">
-      <UPagination
-        :default-page="serverPagination.page"
-        :items-per-page="serverPagination.limit"
-        :total="serverPagination.total"
-        @update:page="goToPage"
-      />
+      <div class="flex items-center gap-1.5">
+        <UPagination
+          :default-page="serverPagination.page"
+          :items-per-page="serverPagination.limit"
+          :total="serverPagination.total"
+          @update:page="goToPage"
+        />
+      </div>
     </div>
   </div>
 </template>
