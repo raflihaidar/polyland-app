@@ -3,21 +3,20 @@ import { h, ref, watch, resolveComponent, onMounted } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import { getPaginationRowModel, type Row } from "@tanstack/table-core";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
-import { useAuthStore } from "@/stores/auth.store";
 import { useApiPrivate } from "@/composables/useApi";
 import { useRouter } from "vue-router";
+import { useConfirmDialog } from "@/composables/useConfirmModal";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
 
 const router = useRouter();
 const toast = useToast();
-const authStore = useAuthStore();
+const confirm = useConfirmDialog()
 const isLoading = ref<boolean>(false);
-const applicationList = ref<any[]>([]);
+const accountList = ref<any[]>([]);
 const statusFilter = ref("all");
 const typeFilter = ref("all");
-const selectedDate = ref<string>("");
 const searchQuery = ref<string>("");
 
 // Pagination dari server
@@ -36,24 +35,6 @@ const pagination = ref({
   pageSize: 10,
 });
 
-// Status badge color mapping
-const statusColorMap: Record<string, any> = {
-  DIPROSES: "info",
-  VERIFIKASI_BERKAS: "warning",
-  MENUNGGU_PEMBAYARAN: "warning",
-  PENANDATANGANAN: "primary",
-  DITOLAK: "error",
-  SELESAI: "success",
-};
-
-const statusLabelMap: Record<string, string> = {
-  DIPROSES: "Diproses",
-  VERIFIKASI_BERKAS: "Verifikasi Berkas",
-  MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
-  PENANDATANGANAN: "Penandatanganan",
-  DITOLAK: "Ditolak",
-  SELESAI: "Selesai",
-};
 
 function getRowItems(row: Row<any>) {
   return [
@@ -99,90 +80,119 @@ function getRowItems(row: Row<any>) {
   ];
 }
 
+const handleApproved = async (id: string) => {
+  try {
+    isLoading.value = true
+    const { data } = await useApiPrivate().put(`/verification-account/verify/${id}`, {
+      status: 'APPROVED'
+    })
+
+    if (data.status === 'success') {
+      toast.add({
+        title: 'Berhasil',
+        description: 'Berhasil menyetujui akun.',
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      title: 'Gagal',
+      description: error.response.data ?? 'Gagal menyetujui akun.',
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleReject = async (id: string) => {
+  try {
+    isLoading.value = true
+
+    const confirmed = await confirm({
+      title: 'Konfirmasi penolakan akun',
+      description: 'Apakah anda yakin menolak verifikasi akun ini?'
+    })
+
+    if(confirmed){
+      const { data } = await useApiPrivate().put(`/verification-account/verify/${id}`, {
+        status: 'REJECTED'
+      })
+  
+      if (data.status === 'success') {
+        toast.add({
+          title: 'Berhasil',
+          description: 'Berhasil menolak akun.',
+        })
+      }
+    }
+  } catch (error: any) {
+    toast.add({
+      title: 'Gagal',
+      description: error.response.data ?? 'Gagal menolak akun.',
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
+
 const columns: TableColumn<any>[] = [
   {
-    accessorKey: "file_number",
-    header: "No. Berkas",
+    accessorKey: "fullName",
+    header: "Nama",
     cell: ({ row }) =>
       h(
         "span",
-        { class: "font-mono text-sm font-medium" },
-        row.original.file_number ?? "-",
+        { class: "font-medium" },
+        row.original.fullName ?? "-",
       ),
   },
   {
-    accessorKey: "person",
-    header: "Nama Pemohon",
+    accessorKey: "nik",
+    header: "NIK",
     cell: ({ row }) =>
-      h("div", { class: "flex flex-col gap-0.5" }, [
-        h("span", { class: "font-medium" }, row.original.person?.name ?? "-"),
-        h(
-          "span",
-          { class: "text-xs text-muted" },
-          row.original.person?.nik ?? "",
-        ),
-      ]),
+      h(
+        "span",
+        { class: "font-mono text-sm" },
+        row.original.nik ?? "-",
+      ),
   },
   {
-    accessorKey: "land",
-    header: "Lokasi Tanah",
-    cell: ({ row }) => {
-      const land = row.original.land;
-      if (!land) return h("span", {}, "-");
-      const address = `${land.street_address}, RT ${land.rt}/RW ${land.rw}, ${land.village?.name}, ${land.district?.name}`;
-      return h("div", { class: "flex flex-col gap-0.5" }, [
-        h("span", { class: "text-sm" }, address),
-        h(
-          "span",
-          { class: "text-xs text-muted" },
-          `${land.regency?.name}, ${land.province?.name}`,
-        ),
-      ]);
-    },
+    accessorKey: "phone",
+    header: "No. HP",
+    cell: ({ row }) =>
+      h("span", {}, row.original.phone ?? "-"),
   },
   {
-    accessorKey: "type",
-    header: "Tipe",
+    accessorKey: "gender",
+    header: "Jenis Kelamin",
     cell: ({ row }) =>
       h(
         UBadge,
-        { variant: "outline", color: "neutral" },
-        () => row.original.type ?? "-",
+        {
+          variant: "subtle",
+          color:
+            row.original.gender === "LAKI_LAKI"
+              ? "primary"
+              : "secondary",
+        },
+        () =>
+          row.original.gender === "LAKI_LAKI"
+            ? "Laki-laki"
+            : "Perempuan",
       ),
-  },
-  {
-    accessorKey: "nib",
-    header: "NIB",
-    cell: ({ row }) =>
-      h("span", { class: "font-mono text-sm" }, row.original.nib ?? "-"),
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status: string = row.original.status;
-      const color = statusColorMap[status] ?? "neutral";
-      const label = statusLabelMap[status] ?? status;
+      const status = row.original.status;
+
       return h(
         UBadge,
-        { class: "capitalize whitespace-nowrap", variant: "subtle", color },
-        () => label,
-      );
-    },
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Tgl. Permohonan",
-    cell: ({ row }) => {
-      const date = new Date(row.original.createdAt);
-      return h(
-        "span",
-        { class: "text-sm whitespace-nowrap" },
-        date.toLocaleDateString("id-ID", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }),
+        {
+          variant: "subtle",
+          color: status === "APPROVED" ? "success" : "warning",
+        },
+        () => status,
       );
     },
   },
@@ -190,17 +200,34 @@ const columns: TableColumn<any>[] = [
     id: "actions",
     header: "Aksi",
     cell: ({ row }) =>
-      h(UButton, {
-        icon: "ri:eye-line",
-        class: "cursor-pointer",
-        onClick: () =>
-          router.push(`/admin/peralihan-hak/permohonan/${row.original?.id}`),
-      }),
-  },
+      h("div", { class: "flex gap-2" }, [
+        h(UButton, {
+          icon: "radix-icons:check",
+          color: "success",
+          class: 'cursor-pointer',
+          onClick: () => handleApproved(row.original.id)
+        }),
+
+        h(UButton, {
+          icon: "radix-icons:cross-2",
+          color: "error",
+          class: 'cursor-pointer',
+          onClick: () =>  handleReject(row.original.id)
+        }),
+
+        h(UButton, {
+          icon: "ri:eye-line",
+          color: "primary",
+          class: 'cursor-pointer',
+          onClick: () =>
+            router.push(`/admin/person/${row.original.id}`),
+        }),
+      ]),
+  }
 ];
 
 // Ambil daftar permohonan
-const getApplicationList = async () => {
+const getListAccount = async () => {
   try {
     isLoading.value = true;
 
@@ -210,10 +237,6 @@ const getApplicationList = async () => {
     const limit = serverPagination.value.limit;
     const search = searchQuery.value ?? "";
 
-    let dateParam = "";
-    if (selectedDate.value) {
-      dateParam = selectedDate.value;
-    }
 
     const params = new URLSearchParams({
       page: String(page),
@@ -221,22 +244,22 @@ const getApplicationList = async () => {
       ...(status && { status }),
       ...(type && { type }),
       ...(search && { search }),
-      ...(dateParam && { date: dateParam }),
     });
 
     const { data } = await useApiPrivate().get(
-      `/ownership-transfer/${authStore.user?.land_office_id}?${params.toString()}`,
+      `/verification-account/list-account`,
     );
 
     if (data.message) {
-      applicationList.value = data.data.applications;
+      accountList.value = data.data;
       serverPagination.value.total = data.data.meta.total;
       serverPagination.value.totalPages = data.data.meta.totalPages;
       serverPagination.value.page = data.data.meta.page;
       serverPagination.value.limit = data.data.meta.limit;
     }
   } catch (error) {
-    applicationList.value = [];
+    // accountList.value = [];
+    console.log(error)
   } finally {
     isLoading.value = false;
   }
@@ -256,7 +279,7 @@ const handleUpdateStatus = async (id: string, status: string) => {
         description: data.message,
         color: "success",
       });
-      await getApplicationList();
+      await getListAccount();
     } else {
       toast.add({
         title: "Gagal Update Status",
@@ -275,95 +298,77 @@ const handleUpdateStatus = async (id: string, status: string) => {
   }
 };
 
-watch(
-  () => statusFilter.value,
-  () => {
-    serverPagination.value.page = 1;
-    getApplicationList();
-  },
-);
+// watch(
+//   () => statusFilter.value,
+//   () => {
+//     serverPagination.value.page = 1;
+//     getListAccount();
+//   },
+// );
 
-watch(
-  () => typeFilter.value,
-  () => {
-    serverPagination.value.page = 1;
-    getApplicationList();
-  },
-);
+// watch(
+//   () => typeFilter.value,
+//   () => {
+//     serverPagination.value.page = 1;
+//     getListAccount();
+//   },
+// );
 
-watch(
-  () => selectedDate.value,
-  () => {
-    serverPagination.value.page = 1;
-    getApplicationList();
-  },
-);
+// watch(
+//   () => selectedDate.value,
+//   () => {
+//     serverPagination.value.page = 1;
+//     getListAccount();
+//   },
+// );
 
-let searchTimeout: ReturnType<typeof setTimeout>;
-watch(
-  () => searchQuery.value,
-  () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      serverPagination.value.page = 1;
-      getApplicationList();
-    }, 400);
-  },
-);
+// let searchTimeout: ReturnType<typeof setTimeout>;
+// watch(
+//   () => searchQuery.value,
+//   () => {
+//     clearTimeout(searchTimeout);
+//     searchTimeout = setTimeout(() => {
+//       serverPagination.value.page = 1;
+//       getListAccount();
+//     }, 400);
+//   },
+// );
 
 const goToPage = (page: number) => {
   serverPagination.value.page = page;
-  getApplicationList();
+  getListAccount();
 };
 
-onMounted(async () => {
-  await getApplicationList();
+onMounted(() => {
+  getListAccount();
 });
 </script>
 
 <template>
   <div class="mt-5">
-    <UTable
-      ref="table"
-      v-model:column-filters="columnFilters"
-      v-model:column-visibility="columnVisibility"
-      v-model:row-selection="rowSelection"
-      v-model:pagination="pagination"
-      :pagination-options="{
+    <UTable ref="table" v-model:column-filters="columnFilters" v-model:column-visibility="columnVisibility"
+      v-model:row-selection="rowSelection" v-model:pagination="pagination" :pagination-options="{
         getPaginationRowModel: getPaginationRowModel(),
-      }"
-      class="shrink-0"
-      :data="applicationList"
-      :columns="columns"
-      :loading="isLoading"
-      :ui="{
+      }" class="shrink-0" :data="accountList" :columns="columns" :loading="isLoading" :ui="{
         base: 'table-fixed border-separate border-spacing-0',
         thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
         tbody: '[&>tr]:last:[&>td]:border-b-0',
         th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
         td: 'border-b border-default',
         separator: 'h-0',
-      }"
-    />
+      }" />
 
-    <div
-      class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto"
-    >
+    <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
       <div class="text-sm text-muted">
         Total
         <span class="font-semibold text-highlighted">
           {{ serverPagination.total }}
         </span>
-        permohonan
       </div>
 
       <div class="flex items-center gap-1.5">
-        <UPagination
-          :default-page="serverPagination.page"
-          :items-per-page="serverPagination.limit"
-          :total="serverPagination.total"
-          @update:page="goToPage"
-        />
+        <UPagination :default-page="serverPagination.page" :items-per-page="serverPagination.limit"
+          :total="serverPagination.total" @update:page="goToPage" />
       </div>
     </div>
   </div>

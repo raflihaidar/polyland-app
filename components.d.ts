@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppLoading: typeof import('./src/components/shared/AppLoading.vue')['default']
     Balance: typeof import('./src/components/Balance.vue')['default']
+    ConfirmDialog: typeof import('./src/components/shared/ConfirmDialog.vue')['default']
     HeaderMobile: typeof import('./src/components/shared/HeaderMobile.vue')['default']
     NavMobile: typeof import('./src/components/shared/NavMobile.vue')['default']
     PublicationButton: typeof import('./src/components/PublicationButton.vue')['default']
