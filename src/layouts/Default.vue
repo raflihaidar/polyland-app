@@ -82,7 +82,7 @@ const links = [
         },
         {
           label: "Roles",
-          to: "/settings",
+          to: "/admin/hak-akses/roles",
           exact: true,
           onSelect: () => {
             open.value = false;

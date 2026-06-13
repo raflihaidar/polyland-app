@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppLoading: typeof import('./src/components/shared/AppLoading.vue')['default']
     Balance: typeof import('./src/components/Balance.vue')['default']
+    BasePagination: typeof import('./src/components/BasePagination.vue')['default']
     ConfirmDialog: typeof import('./src/components/shared/ConfirmDialog.vue')['default']
     HeaderMobile: typeof import('./src/components/shared/HeaderMobile.vue')['default']
     NavMobile: typeof import('./src/components/shared/NavMobile.vue')['default']
@@ -40,6 +41,7 @@ declare module 'vue' {
     UIcon: typeof import('./node_modules/@nuxt/ui/dist/runtime/vue/components/Icon.vue')['default']
     UInput: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
     UInputDate: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/InputDate.vue')['default']
+    UInputTags: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/InputTags.vue')['default']
     ULink: typeof import('./node_modules/@nuxt/ui/dist/runtime/vue/overrides/vue-router/Link.vue')['default']
     UModal: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
     UNavigationMenu: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/NavigationMenu.vue')['default']

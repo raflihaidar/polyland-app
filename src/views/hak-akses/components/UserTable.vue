@@ -4,6 +4,7 @@ import type { TableColumn } from "@nuxt/ui";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import { useApiPrivate } from "@/composables/useApi";
 import { useRouter } from "vue-router";
+import { useReferenceStore } from "@/stores/reference.store";
 import { useConfirmDialog } from "@/composables/useConfirmModal";
 import { useDebounceFn } from "@vueuse/core";
 import BasePagination from "@/components/BasePagination.vue";
@@ -11,11 +12,12 @@ import BasePagination from "@/components/BasePagination.vue";
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
 
+const referenceStore = useReferenceStore()
 const router = useRouter();
 const toast = useToast();
 const confirm = useConfirmDialog();
 const isLoading = ref<boolean>(false);
-const accountList = ref<any[]>([]);
+const userList = ref<any[]>([]);
 const statusFilter = ref("all");
 const searchQuery = ref<string>("");
 
@@ -30,95 +32,46 @@ const columnFilters = ref([]);
 const columnVisibility = ref();
 const rowSelection = ref({});
 
-const statusColorMap: Record<string, any> = {
-  APPROVED: "success",
-  REJECTED: "error",
-  PENDING: "warning",
-};
-
-const handleApproved = useDebounceFn(async (id: string) => {
+const handleDelete = useDebounceFn(async (id: string) => {
   try {
-    isLoading.value = true;
-
+    
     const isConfirmed = await confirm({
-      title: "Konfirmasi penolakan akun",
-      description: "Apakah anda yakin menolak verifikasi akun ini?",
+      title: "Apakah anda yakin menghapus user ini?",
+      // description: "Apakah anda yakin menghapus user ini?",
     });
-
-
-    if(isConfirmed){      
-      const { data } = await useApiPrivate().post(
-        `/verification-account/verify/${id}`,
-        {
-          status: "APPROVED",
-        },
-      );
-  
-      if (data.status === "success") {
-        toast.add({
-          color : 'success',
-          title: "Berhasil",
-          description: data.message ?? "Verifikasi akun berhasil disetujui.",
-        });
-
-        getListAccount()
-
-      }
-    }
-  } catch (error: any) {
-    toast.add({
-      title: "Gagal",
-      description: error.response.data ?? "Gagal menyetujui akun.",
-    });
-  } finally {
-    isLoading.value = false;
-  }
-}, 300)
-
-const handleReject = useDebounceFn(async (id : string) => {
-  try {
-    isLoading.value = true;
-
-    const isConfirmed = await confirm({
-      title: "Konfirmasi penolakan akun",
-      description: "Apakah anda yakin menolak verifikasi akun ini?",
-    });
-
+    
     if (isConfirmed) {
-      const { data } = await useApiPrivate().post(
-        `/verification-account/verify/${id}`,
-        {
-          status: "REJECTED",
-        },
+      isLoading.value = true;
+      const { data } = await useApiPrivate().delete(
+        `/person/${id}`,
       );
 
       if (data.status === "success") {
         toast.add({
-          color : 'success',
+          color: 'success',
           title: "Berhasil",
-          description: data.message ?? "Verifikasi akun berhasil ditolak",
+          description: data.message ?? "User berhasil dihapus",
         });
 
-        getListAccount()
+        getUserList()
       }
     }
   } catch (error: any) {
     toast.add({
       title: "Gagal",
-      description: error.response.data ?? "Gagal menolak akun.",
+      description: error.response.data ?? "User gagal dihapus.",
     });
   } finally {
     isLoading.value = false;
   }
 }, 300)
-
 
 const columns: TableColumn<any>[] = [
   {
-    accessorKey: "fullName",
+    accessorKey: "name",
     header: "Nama",
     cell: ({ row }) =>
-      h("span", { class: "font-medium" }, row.original.fullName ?? "-"),
+      h("span", { class: "font-medium" }, row.original.name ?? "-"),
   },
   {
     accessorKey: "nik",
@@ -145,56 +98,54 @@ const columns: TableColumn<any>[] = [
       ),
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-
-      return h(
-        UBadge,
-        {
-          variant: "subtle",
-          color: statusColorMap[status] ?? 'neutral',
-        },
-        () => status,
-      );
-    },
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) =>
+      h(
+        "div",
+        { class: "flex gap-1 flex-wrap max-w-64" },
+        row.original.roles.map((item: any) =>
+          h(
+            UBadge,
+            {
+              variant: "soft",
+              color: "primary"
+            },
+            () => item.role.name
+          ),
+        )
+      ),
   },
   {
     id: "actions",
     header: "Aksi",
     cell: ({ row }) => {
-      const isPending = row.original?.status === "PENDING";
-      const buttonList: any = [
-        h(UButton, {
-          icon: "ri:eye-line",
-          color: "primary",
-          class: "cursor-pointer",
-          onClick: () => router.push(`/admin/person/${row.original.id}`),
-        }),
-      ];
-      if (isPending) {
-        buttonList.unshift([
+      return h("div", { class: "flex gap-2" },
+        [
           h(UButton, {
-            icon: "radix-icons:check",
-            color: "success",
+            icon: "ri:eye-line",
+            color: "neutral",
             class: "cursor-pointer",
-            onClick: () => handleApproved(row.original.id),
+            onClick: () => router.push(`/admin/person/${row.original.id}`),
           }),
-          h(UButton, {
-            icon: "radix-icons:cross-2",
-            color: "error",
+           h(UButton, {
+            icon: "radix-icons:pencil-2",
+            color: "warning",
             class: "cursor-pointer",
-            onClick: () => handleReject(row.original.id),
+            onClick: () => router.push(`/admin/person/${row.original.id}`),
           }),
+           h(UButton, {
+            icon: "radix-icons:trash",
+            color: "primary",
+            class: "cursor-pointer",
+            onClick: () => handleDelete(row.original.id),
+          })
         ]);
-      }
-      return h("div", { class: "flex gap-2" }, [...buttonList]);
     },
   },
 ];
 
-const getListAccount = async () => {
+const getUserList = async () => {
   try {
     isLoading.value = true;
 
@@ -211,11 +162,11 @@ const getListAccount = async () => {
     });
 
     const { data } = await useApiPrivate().get(
-      `/verification-account/list-account`, {params}
+      `/person/`, { params }
     );
 
     if (data.message) {
-      accountList.value = data.data.account;
+      userList.value = data.data.users;
       pagination.value.total = data.data.meta.total;
       pagination.value.totalPages = data.data.meta.totalPages;
       pagination.value.page = data.data.meta.page;
@@ -230,25 +181,29 @@ const getListAccount = async () => {
 
 const goToPage = (page: number) => {
   pagination.value.page = page;
-  getListAccount();
+  getUserList();
 };
 
 const handleSearch = useDebounceFn(() => {
-  getListAccount()
+  getUserList()
 }, 300)
 
 const handleFilterStatus = useDebounceFn(() => {
-  getListAccount()
+  getUserList()
 }, 300)
 
 watch(
   () => [pagination.value.page, pagination.value.limit],
-  getListAccount,
+  getUserList,
   { immediate: true }
 )
 
-onMounted(() => {
-  getListAccount();
+onMounted(async () => {
+  await getUserList()
+  await referenceStore.getAllRole(searchQuery.value)
+
+
+  console.log(referenceStore.roles)
 });
 </script>
 
@@ -258,12 +213,9 @@ onMounted(() => {
       <USelect
         @change="handleFilterStatus"
         v-model="statusFilter"
-        :items="[
-          { label: 'Semua Status', value: 'all' },
-          { label: 'Pending', value: 'PENDING' },
-          { label: 'Disetujui', value: 'APPROVED' },
-          { label: 'Ditolak', value: 'REJECTED' },
-        ]"
+        :items="referenceStore.roles"
+        labelKey="name"
+        valueKey="id"
         :ui="{
           trailingIcon:
             'group-data-[state=open]:rotate-180 transition-transform duration-200',
@@ -274,25 +226,13 @@ onMounted(() => {
     </div>
 
     <div class="flex items-center gap-x-3">
-      <UInput
-        v-model="searchQuery"
-        class="max-w-sm"
-        @input="handleSearch"
-        icon="i-lucide-search"
-        placeholder="Cari nama / NIK..."
-      />
+      <UInput v-model="searchQuery" class="max-w-sm" @input="handleSearch" icon="i-lucide-search"
+        placeholder="Cari nama / NIK..." />
     </div>
   </div>
   <div class="mt-5">
-    <UTable
-      ref="table"
-      v-model:column-filters="columnFilters"
-      v-model:column-visibility="columnVisibility"
-      v-model:row-selection="rowSelection"
-      class="shrink-0"
-      :data="accountList"
-      :columns="columns"
-      :loading="isLoading"
+    <UTable ref="table" v-model:column-filters="columnFilters" v-model:column-visibility="columnVisibility"
+      v-model:row-selection="rowSelection" class="shrink-0" :data="userList" :columns="columns" :loading="isLoading"
       :ui="{
         base: 'table-fixed border-separate border-spacing-0',
         thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
@@ -300,8 +240,7 @@ onMounted(() => {
         th: 'py-2 first:rounded-l-lg last:rounded-r-lg border-y border-default first:border-l last:border-r',
         td: 'border-b border-default',
         separator: 'h-0',
-      }"
-    />
-    <BasePagination v-model="pagination" @goToPage="goToPage"/>
+      }" />
+    <BasePagination v-model="pagination" @goToPage="goToPage" />
   </div>
 </template>

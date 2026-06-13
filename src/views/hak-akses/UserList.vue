@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { reactive } from "vue";
-import UserTable from "../components/Table/UserTable.vue";
-import AccountTable from "../components/Table/AccountTable.vue";
+import UserTable from "./components/UserTable.vue";
+import AccountTable from "../verifikasi-akun/components/Table/AccountTable.vue";
 
 const items = [
   {

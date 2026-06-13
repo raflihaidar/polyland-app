@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import {
-  useTemplateRef,
   h,
   ref,
   watch,
   resolveComponent,
   onMounted,
 } from "vue";
-import { upperFirst } from "scule";
 import type { TableColumn } from "@nuxt/ui";
 import { getPaginationRowModel, type Row } from "@tanstack/table-core";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
@@ -17,11 +15,9 @@ import { useRouter } from "vue-router";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
 
 const router = useRouter();
 const toast = useToast();
-const table = useTemplateRef("table");
 const authStore = useAuthStore();
 const isLoading = ref<boolean>(false);
 const applicationList = ref<any[]>([]);
@@ -65,49 +61,6 @@ const statusLabelMap: Record<string, string> = {
   SELESAI: "Selesai",
 };
 
-function getRowItems(row: Row<any>) {
-  return [
-    {
-      type: "label",
-      label: "Aksi",
-    },
-    {
-      type: "separator",
-    },
-    {
-      label: "Lihat Detail",
-      icon: "i-lucide-eye",
-      onSelect() {
-        router.push(`/admin/peralihan-hak/${row.original.id}`);
-      },
-    },
-    {
-      label: "Verifikasi Berkas",
-      icon: "i-lucide-file-check",
-      onSelect() {
-        handleUpdateStatus(row.original.id, "VERIFIKASI_BERKAS");
-      },
-    },
-    {
-      label: "Selesaikan",
-      icon: "i-lucide-check-circle",
-      onSelect() {
-        handleUpdateStatus(row.original.id, "SELESAI");
-      },
-    },
-    {
-      type: "separator",
-    },
-    {
-      label: "Tolak Permohonan",
-      icon: "i-lucide-x-circle",
-      color: "error",
-      onSelect() {
-        handleUpdateStatus(row.original.id, "DITOLAK");
-      },
-    },
-  ];
-}
 
 const columns: TableColumn<any>[] = [
   {
@@ -252,38 +205,6 @@ const getApplicationList = async () => {
   }
 };
 
-const handleUpdateStatus = async (id: string, status: string) => {
-  try {
-    isLoading.value = true;
-    const { data } = await useApiPrivate().put(
-      `/ownership-transfer/${id}/status`,
-      { status },
-    );
-
-    if (data.status === "success") {
-      toast.add({
-        title: "Berhasil Update Status",
-        description: data.message,
-        color: "success",
-      });
-      await getApplicationList();
-    } else {
-      toast.add({
-        title: "Gagal Update Status",
-        description: data.message,
-        color: "error",
-      });
-    }
-  } catch (error: any) {
-    toast.add({
-      title: "Terjadi Kesalahan",
-      description: "Gagal memperbarui status permohonan.",
-      color: "error",
-    });
-  } finally {
-    isLoading.value = false;
-  }
-};
 
 watch(
   () => statusFilter.value,

@@ -1,1 +1,0 @@
-<template>User Table</template>

@@ -1,5 +1,6 @@
 export * from "./enums";
 
+export * from "./domain/referenceData.type"
 export * from "./domain/account.type";
 export * from "./domain/person.type";
 export * from "./domain/ownerTransfer.type";
