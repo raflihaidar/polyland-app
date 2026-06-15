@@ -3,12 +3,20 @@ export const cariBerkasRoutes = [
     path: "/cari-berkas",
     name: "cari-berkas",
     component: () => import("../views/cari-berkas/CariBerkas.vue"),
-    meta: { requiresAuth: true, title: "Cari Berkas" },
+    meta: {
+      requiresAuth: true,
+      title: "Cari Berkas",
+      privilege: { module: "peralihan-hak", action: ["read"] },
+    },
   },
   {
     path: "/cari-berkas/hasil",
     name: "hasil cari berkas",
     component: () => import("../views/cari-berkas/Hasil.vue"),
-    meta: { requiresAuth: true, title: "Detail Berkas" },
+    meta: {
+      requiresAuth: true,
+      title: "Detail Berkas",
+      privilege: "peralihan-hak",
+    },
   },
 ];

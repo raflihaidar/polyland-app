@@ -64,11 +64,14 @@ export interface Land {
 }
 
 export interface LandOffice {
+  id: string;
   name: string;
   code: string;
-  address: string;
   email: string;
   phone: string;
+  province: string;
+  regency: string;
+  address: string;
 }
 
 export interface ApplicationDetailResponse {

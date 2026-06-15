@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/auth.store";
 
 import { guestRoutes } from "./Guest.route";
-import { aktaRoutes } from "./Akta.route";
 import { cariBerkasRoutes } from "./CariBerkas.route";
 import { profilRoutes } from "./Profil.route";
 import { sertifikatRoutes } from "./Sertifikat.route";
@@ -39,7 +38,6 @@ const routes = [
         component: () => import("@/views/VerifyResult.vue"),
         meta: { requiresAuth: false },
       },
-      ...aktaRoutes,
       ...cariBerkasRoutes,
       ...profilRoutes,
       ...sertifikatRoutes,
@@ -63,10 +61,11 @@ const routes = [
     meta: {
       requiresAuth: true,
       roles: [
-        "admin kantah",
+        "admin aplikasi",
+        "kepala kanwil",
+        "admin kanwil",
         "kepala kantah",
-        "registration officer",
-        "notaris/PPAT",
+        "admin kantah",
       ],
     },
 
@@ -81,6 +80,11 @@ const routes = [
       ...peralihanHakRoutes,
       ...hakAksesRoutes,
     ],
+  },
+  {
+    path: "/forbidden",
+    name: "forbidden",
+    component: () => import("@/views/errors/Forbidden.vue"),
   },
   {
     path: "/:pathMatch(.*)*",
@@ -144,6 +148,30 @@ router.beforeResolve(async (to, from, next) => {
         name: "public.home",
       });
     }
+  }
+
+  // =====================================
+  // PRIVILEGE CHECKING
+  // =====================================
+
+  if (to.meta.privilege && isAuthenticated.value) {
+    // fetch privilege sekali saja, kalau sudah ada skip
+    if (Object.keys(authStore.privileges).length === 0) {
+      await authStore.fetchPrivileges();
+    }
+
+    const privilege = to.meta.privilege as
+      | string
+      | { module: string; action: string | string[] };
+
+    const module = typeof privilege === "string" ? privilege : privilege.module;
+    const action = typeof privilege === "string" ? "read" : privilege.action;
+
+    const hasAccess = Array.isArray(action)
+      ? action.some((a) => authStore.canAccess(module, a))
+      : authStore.canAccess(module, action);
+
+    if (!hasAccess) return next({ name: "forbidden" });
   }
 
   // =====================================

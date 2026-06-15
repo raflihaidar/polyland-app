@@ -3,7 +3,11 @@ export const antrianOnlineRoutes = [
     path: "/antrian-online",
     name: "antrian-online",
     component: () => import("../views/antrian-online/AntrianDaring.vue"),
-    meta: { requiresAuth: true, title: "Antrian Online" },
+    meta: {
+      requiresAuth: true,
+      title: "Antrian Online",
+      privilege: { module: "antrian-online", action: ["read"] },
+    },
   },
   {
     path: "/antrian-online/create",
@@ -15,7 +19,10 @@ export const antrianOnlineRoutes = [
         name: "antrian-online.form",
         component: () =>
           import("@/views/antrian-online/components/Section/FormCreateAntrian.vue"),
-        meta: { title: "Buat Antrian" },
+        meta: {
+          title: "Buat Antrian",
+          privilege: { module: "antrian-online", action: ["create"] },
+        },
       },
       // {
       //   path: "loket",
@@ -32,7 +39,11 @@ export const antrianOnlineRoutes = [
     name: "antrian-online.detail-tiket",
     component: () =>
       import("@/views/antrian-online/components/Section/DetailQueue.vue"),
-    meta: { requiresAuth: true, title: "Detail Antrian" },
+    meta: {
+      requiresAuth: true,
+      title: "Detail Antrian",
+      privilege: { module: "antrian-online", action: ["read"] },
+    },
   },
 ];
 
@@ -41,12 +52,20 @@ export const adminAntrianOnline = [
     path: "antrian-online/dashboard",
     name: "antrian-online.dashboard",
     component: () => import("../views/antrian-online/admin/Dashboard.vue"),
-    meta: { requiresAuth: true, title: "Dashboard Antrian Online" },
+    meta: {
+      requiresAuth: true,
+      title: "Dashboard Antrian Online",
+      privilege: { module: "antrian-online", action: ["read"] },
+    },
   },
   {
     path: "antrian-online/list",
     name: "antrian-online.list",
     component: () => import("../views/antrian-online/admin/AntrianList.vue"),
-    meta: { requiresAuth: true, title: "Daftar Antrian Online" },
+    meta: {
+      requiresAuth: true,
+      title: "Daftar Antrian Online",
+      privilege: { module: "antrian-online", action: ["read"] },
+    },
   },
 ];

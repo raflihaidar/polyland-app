@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import type { NavigationMenuItem } from "@nuxt/ui";
 import { useRoute } from "vue-router";
-// import UserMenu from "@/components/UserMenu.vue";
 
 const route = useRoute();
 const open = ref(false);
@@ -24,14 +23,14 @@ const links = [
       defaultOpen: false,
       type: "trigger",
       children: [
-        {
-          label: "Dashboard",
-          to: "/admin/antrian-online/dashboard",
-          exact: true,
-          onSelect: () => {
-            open.value = false;
-          },
-        },
+        // {
+        //   label: "Dashboard",
+        //   to: "/admin/antrian-online/dashboard",
+        //   exact: true,
+        //   onSelect: () => {
+        //     open.value = false;
+        //   },
+        // },
         {
           label: "Antrian",
           to: "/admin/antrian-online/list",
@@ -83,6 +82,14 @@ const links = [
         {
           label: "Roles",
           to: "/admin/hak-akses/roles",
+          exact: true,
+          onSelect: () => {
+            open.value = false;
+          },
+        },
+        {
+          label: "Privilege",
+          to: "/admin/hak-akses/privilege",
           exact: true,
           onSelect: () => {
             open.value = false;

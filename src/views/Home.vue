@@ -140,7 +140,7 @@ onMounted(async () => {
             <p class="text-xs font-medium">Sertifikatku</p>
           </div>
 
-          <div class="w-full text-center flex flex-col items-center">
+          <!-- <div class="w-full text-center flex flex-col items-center">
             <div
               class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"
             >
@@ -151,8 +151,7 @@ onMounted(async () => {
               />
             </div>
             <p class="text-xs font-medium">Aktaku</p>
-          </div>
-
+          </div> -->
           <!-- <div class="w-full text-center">
             <div
               class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"

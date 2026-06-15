@@ -4,7 +4,7 @@ import AccountTable from "../verifikasi-akun/components/Table/AccountTable.vue";
 
 const items = [
   {
-    label: "User",
+    label: "Pengguna",
     icon: "lucide:user-round",
     slot: "user",
   },

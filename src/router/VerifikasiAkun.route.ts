@@ -9,14 +9,20 @@ export const verifikasiAkunRoutes = [
         name: "verifikasi-akun.form",
         component: () =>
           import("@/views/verifikasi-akun/components/FormPage.vue"),
-        meta: { requiresAuth: true },
+        meta: {
+          requiresAuth: true,
+          privilege: { module: "verifikasi-akun", action: ["read", "create"] },
+        },
       },
       {
         path: "wallet-sign",
         name: "verifasi-akun.wallet-sign",
         component: () =>
           import("@/views/verifikasi-akun/components/WalletSign.vue"),
-        meta: { requiresAuth: true },
+        meta: {
+          requiresAuth: true,
+          privilege: { module: "verifikasi-akun", action: ["read", "create"] },
+        },
       },
     ],
     meta: { requiresAuth: true, title: "Verifikasi Akun" },

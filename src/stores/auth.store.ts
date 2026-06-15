@@ -13,6 +13,7 @@ export const useAuthStore = defineStore(
     const address = ref<string | null>(null);
     const chainId = ref<string | null>(null);
     const loadArr = ref<string[]>([]);
+    const privileges = ref<Record<string, boolean>>({});
 
     const isMetaMaskSupported = computed(
       () => typeof (window as any).ethereum !== "undefined",
@@ -37,7 +38,24 @@ export const useAuthStore = defineStore(
       },
     });
 
+    const canAccess = (module: string, action: string): boolean => {
+      return privileges.value[`${module}.${action}`] ?? false;
+    };
+
     const isLoading = (key: string): boolean => loadArr.value.includes(key);
+
+    const fetchPrivileges = async () => {
+      const { data } = await useApiPrivate().get("/privilege/my-privileges");
+
+      for (const section of data.data) {
+        for (const mod of section.modules) {
+          for (const [action, allowed] of Object.entries(mod.privileges)) {
+            privileges.value[`${mod.module_slug}.${action}`] =
+              allowed as boolean;
+          }
+        }
+      }
+    };
 
     const login = async (payload: { email: string; password: string }) => {
       try {
@@ -83,6 +101,7 @@ export const useAuthStore = defineStore(
       const { data } = await useApi().get("/auth/logout", {});
       if (data) {
         user.value = null;
+        privileges.value = {};
       }
     };
 
@@ -179,8 +198,10 @@ export const useAuthStore = defineStore(
       user,
       chainId,
       address,
+      privileges,
       isAuthenticated,
       isMetaMaskSupported,
+      canAccess,
       isLoading,
       connectMetaMask,
       attempt,
@@ -188,6 +209,7 @@ export const useAuthStore = defineStore(
       register,
       logout,
       refresh,
+      fetchPrivileges,
     };
   },
   {

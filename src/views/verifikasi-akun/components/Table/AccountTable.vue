@@ -41,28 +41,26 @@ const handleApproved = useDebounceFn(async (id: string) => {
     isLoading.value = true;
 
     const isConfirmed = await confirm({
-      title: "Konfirmasi penolakan akun",
-      description: "Apakah anda yakin menolak verifikasi akun ini?",
+      title: "Approved verifikasi akun",
+      description: "Apakah anda yakin menyetujui verifikasi akun ini?",
     });
 
-
-    if(isConfirmed){      
+    if (isConfirmed) {
       const { data } = await useApiPrivate().post(
         `/verification-account/verify/${id}`,
         {
           status: "APPROVED",
         },
       );
-  
+
       if (data.status === "success") {
         toast.add({
-          color : 'success',
+          color: "success",
           title: "Berhasil",
           description: data.message ?? "Verifikasi akun berhasil disetujui.",
         });
 
-        getListAccount()
-
+        getListAccount();
       }
     }
   } catch (error: any) {
@@ -73,9 +71,9 @@ const handleApproved = useDebounceFn(async (id: string) => {
   } finally {
     isLoading.value = false;
   }
-}, 300)
+}, 300);
 
-const handleReject = useDebounceFn(async (id : string) => {
+const handleReject = useDebounceFn(async (id: string) => {
   try {
     isLoading.value = true;
 
@@ -94,12 +92,12 @@ const handleReject = useDebounceFn(async (id : string) => {
 
       if (data.status === "success") {
         toast.add({
-          color : 'success',
+          color: "success",
           title: "Berhasil",
           description: data.message ?? "Verifikasi akun berhasil ditolak",
         });
 
-        getListAccount()
+        getListAccount();
       }
     }
   } catch (error: any) {
@@ -110,8 +108,7 @@ const handleReject = useDebounceFn(async (id : string) => {
   } finally {
     isLoading.value = false;
   }
-}, 300)
-
+}, 300);
 
 const columns: TableColumn<any>[] = [
   {
@@ -154,7 +151,7 @@ const columns: TableColumn<any>[] = [
         UBadge,
         {
           variant: "subtle",
-          color: statusColorMap[status] ?? 'neutral',
+          color: statusColorMap[status] ?? "neutral",
         },
         () => status,
       );
@@ -211,7 +208,8 @@ const getListAccount = async () => {
     });
 
     const { data } = await useApiPrivate().get(
-      `/verification-account/list-account`, {params}
+      `/verification-account/list-account`,
+      { params },
     );
 
     if (data.message) {
@@ -234,18 +232,16 @@ const goToPage = (page: number) => {
 };
 
 const handleSearch = useDebounceFn(() => {
-  getListAccount()
-}, 300)
+  getListAccount();
+}, 300);
 
 const handleFilterStatus = useDebounceFn(() => {
-  getListAccount()
-}, 300)
+  getListAccount();
+}, 300);
 
-watch(
-  () => [pagination.value.page, pagination.value.limit],
-  getListAccount,
-  { immediate: true }
-)
+watch(() => [pagination.value.page, pagination.value.limit], getListAccount, {
+  immediate: true,
+});
 
 onMounted(() => {
   getListAccount();
@@ -302,6 +298,6 @@ onMounted(() => {
         separator: 'h-0',
       }"
     />
-    <BasePagination v-model="pagination" @goToPage="goToPage"/>
+    <BasePagination v-model="pagination" @goToPage="goToPage" />
   </div>
 </template>
