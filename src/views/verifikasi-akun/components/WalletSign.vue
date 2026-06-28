@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref, computed } from "vue";
+import { inject, ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import { useAccountStore } from "../../../stores/account.store";
@@ -23,6 +23,11 @@ const isConnected = computed(() => publicKey.value !== null);
 let mmsdk: MetaMaskSDK | null = null;
 
 const getProvider = async () => {
+  if (typeof window !== "undefined" && window.ethereum) {
+    return window.ethereum;
+  }
+
+  // Lazy-load SDK jika di lingkungan client browser
   if (!mmsdk && typeof window !== "undefined") {
     mmsdk = new MetaMaskSDK({
       dappMetadata: {
@@ -40,54 +45,98 @@ const getProvider = async () => {
   throw new Error("MetaMask Provider tidak ditemukan");
 };
 
-const getEncryptionPublicKey = async () => {
-  const provider = await getProvider();
+const handleAccountsChanged = async (accounts: string[]) => {
+  try {
+    if (!accounts.length) {
+      publicKey.value = null;
+      walletAddress.value = null;
 
-  const accounts = (await provider!.request({
-    method: "eth_requestAccounts",
+      toast.add({
+        title: "Wallet terputus",
+        description: "Tidak ada akun yang terhubung",
+        color: "warning",
+      });
+
+      return;
+    }
+
+    const provider = await getProvider();
+
+    const { key, account } = await getEncryptionPublicKey(provider);
+
+    publicKey.value = key;
+    walletAddress.value = account;
+
+    toast.add({
+      title: "Akun berubah",
+      description: `${account.slice(0, 6)}...${account.slice(-4)}`,
+      color: "info",
+    });
+  } catch (error) {
+    console.error("Gagal menangani perubahan akun:", error);
+  }
+};
+
+const getEncryptionPublicKey = async (provider: any) => {
+  // Paksa MetaMask menampilkan pilihan akun
+  await provider.request({
+    method: "wallet_requestPermissions",
+    params: [{ eth_accounts: {} }],
+  });
+
+  const accounts = (await provider.request({
+    method: "eth_accounts",
   })) as string[];
 
   const account = accounts[0] as `0x${string}`;
+
+  if (!account) {
+    throw new Error("Wallet tidak terhubung");
+  }
+
   const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
 
-  const signature = (await provider!.request({
+  const signature = (await provider.request({
     method: "personal_sign",
     params: [message, account],
   })) as `0x${string}`;
 
   const entropy = keccak256(signature);
-  const privKey = new PrivateKey(Buffer.from(entropy.substring(2), "hex"));
 
-  return { key: privKey.publicKey.toHex(), account };
+  const privKey = new PrivateKey(Buffer.from(entropy.slice(2), "hex"));
+
+  return {
+    key: privKey.publicKey.toHex(),
+    account,
+  };
 };
 
-const connectWallet = async (): Promise<void> => {
+const connectWallet = async () => {
   isConnecting.value = true;
+
   try {
-    const { key, account } = await getEncryptionPublicKey();
+    const provider = await getProvider();
+
+    const { key, account } = await getEncryptionPublicKey(provider);
+
     publicKey.value = key;
     walletAddress.value = account;
 
     toast.add({
       title: "Wallet terhubung",
-      description: `Berhasil terhubung ke ${account.slice(0, 6)}...${account.slice(-4)}`,
+      description: `${account.slice(0, 6)}...${account.slice(-4)}`,
       color: "success",
     });
-  } catch (err: unknown) {
-    const error = err as { code?: number; message?: string };
+  } catch (err: any) {
     toast.add({
       title: "Koneksi gagal",
-      description:
-        error.code === 4001
-          ? "Koneksi ditolak oleh pengguna"
-          : (error.message ?? "Gagal menghubungkan wallet"),
+      description: err.message,
       color: "error",
     });
   } finally {
     isConnecting.value = false;
   }
 };
-
 const submitAll = async (): Promise<void> => {
   if (!publicKey.value) return;
 
@@ -111,6 +160,26 @@ const submitAll = async (): Promise<void> => {
     router.push("/verifikasi-akun/konfirmasi");
   }
 };
+
+onMounted(async () => {
+  try {
+    const provider = await getProvider();
+
+    provider.on("accountsChanged", handleAccountsChanged);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+onUnmounted(async () => {
+  try {
+    const provider = await getProvider();
+
+    provider.removeListener("accountsChanged", handleAccountsChanged);
+  } catch (error) {
+    console.error(error);
+  }
+});
 </script>
 
 <template>

@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { provide, ref, shallowRef } from "vue";
+import { onMounted, provide, ref, shallowRef } from "vue";
 import * as z from "zod";
 import { CalendarDate } from "@internationalized/date";
 import { Gender } from "../../types";
+import { useRoute } from "vue-router";
+import { useAccountStore } from "@/stores/account.store";
 
 provide("head-title", "Verifikasi Akun");
+const route = useRoute();
+const accountStore = useAccountStore();
 
 const schema = z.object({
   fullName: z
@@ -59,6 +63,13 @@ const modelValue = shallowRef(new CalendarDate(2022, 1, 10));
 provide("verifikasi-form", form);
 provide("verifikasi-schema", schema);
 provide("verifikasi-model-date", modelValue);
+
+onMounted(() => {
+  const personId = route.params?.id;
+  if (personId) {
+    accountStore.getAccount(personId as string);
+  }
+});
 </script>
 
 <template>

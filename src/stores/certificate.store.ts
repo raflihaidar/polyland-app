@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useApiPrivate } from "@/composables/useApi";
-import type { Certificate, Meta } from "@/types";
+import type { Certificate, CertificateParams } from "@/types";
 
 export const useCertificateStore = defineStore("certificate", () => {
   const certificates = ref<Certificate[]>([]);
@@ -19,14 +19,19 @@ export const useCertificateStore = defineStore("certificate", () => {
 
   const isLoading = (key: string): boolean => loadArr.value.includes(key);
 
-  const getAll = async (meta: Meta = { page: 1, limit: 10, search: "" }) => {
+  const reset = () => {
+    certificates.value = [];
+  };
+
+  const getAll = async (params: CertificateParams) => {
     try {
       startLoading("FETCH");
-      const { data } = await useApiPrivate().get(
-        `/certificate?page=${meta.page}&limit=${meta.limit}&search=${meta.search}`,
-      );
+      const { data } = await useApiPrivate().get(`/certificate`, {
+        params,
+      });
       certificates.value = data.data ?? [];
       return {
+        data,
         status: data.status,
         message: data.message,
       };
@@ -46,7 +51,6 @@ export const useCertificateStore = defineStore("certificate", () => {
     try {
       startLoading("FETCH_DETAIL");
       const { data } = await useApiPrivate().get(`/certificate/${id}`);
-      certificates.value = data.data ?? [];
       return {
         status: data.status,
         message: data.message,
@@ -67,6 +71,7 @@ export const useCertificateStore = defineStore("certificate", () => {
   return {
     loadArr,
     certificates,
+    reset,
     getAll,
     getDetailCertificate,
     isLoading,

@@ -20,6 +20,13 @@ export type CertificateStatus =
   | "DALAM_PROSES"
   | "BERMASALAH";
 
+export enum Status {
+  AKTIF,
+  TIDAK_AKTIF,
+  DALAM_PROSES,
+  BERMASALAH,
+}
+
 export type ApplicationStatus =
   | "DIPROSES"
   | "VERIFIKASI_BERKAS"

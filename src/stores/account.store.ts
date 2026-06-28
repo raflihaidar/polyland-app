@@ -65,10 +65,30 @@ export const useAccountStore = defineStore("account", () => {
     }
   };
 
+  const getAccount = async (personId: string) => {
+    try {
+      const { data } = await useApiPrivate().get(
+        `/verification-account/${personId}`,
+      );
+
+      return {
+        status: data.status,
+        message: data.message,
+        data: data.data,
+      };
+    } catch (error: any) {
+      return {
+        status: error.response?.data.status,
+        message: error.response?.data.message ?? "Gagal mendapatkan data akun",
+      };
+    }
+  };
+
   return {
     isAccountVerified,
     isLoading,
     checkAccount,
     submitVerification,
+    getAccount,
   };
 });

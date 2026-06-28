@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { inject, useTemplateRef, shallowRef } from "vue";
+import { inject, useTemplateRef, shallowRef, computed } from "vue";
 import { useAccountStore } from "../../../stores/account.store";
 import { Gender } from "../../../types";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
@@ -14,6 +14,22 @@ const toast = useToast();
 const router = useRouter();
 const store = useAccountStore();
 
+const isValid = computed(() => {
+  const data = form.value;
+
+  console.log("form : ", form.value);
+
+  return (
+    !!data.fullName?.trim() &&
+    !!data.nik?.trim() &&
+    !!data.phone?.trim() &&
+    !!data.birthPlace?.trim() &&
+    !!data.address?.trim() &&
+    // !!data.publicKey?.trim() &&
+    !!data.birthDate &&
+    !!data.gender
+  );
+});
 const form = inject<Ref<Partial<VerifikasiSchema>>>("verifikasi-form")!;
 const schema = inject<ZodTypeAny>("verifikasi-schema")!;
 const modelValue = inject<ShallowRef<CalendarDate>>("verifikasi-model-date")!;
@@ -107,6 +123,7 @@ const submit = () => {
       <UButton
         @click="submit"
         type="submit"
+        :disabled="!isValid"
         label="Lanjut ke Wallet Sign"
         block
         class="mt-5"

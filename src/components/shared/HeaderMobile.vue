@@ -16,10 +16,21 @@ const isMainPage = computed(() => {
 <template>
   <header
     v-if="route.name === 'public.home'"
-    class="w-full bg-white left-1/2 transform -translate-x-1/2 max-w-md h-16 max-h-16 flex z-50 justify-between items-center p-5 fixed top-0 shadow-xs"
+    class="w-full bg-white left-1/2 transform -translate-x-1/2 max-w-md h-16 max-h-16 flex z-50 justify-between items-center py-5 px-3 fixed top-0 shadow-xs"
   >
-    <h1 class="font-semibold">Jejak Tanahku</h1>
-    <UIcon name="iconoir:bell" class="size-6" />
+    <div class="flex items-center w-1/2 p-0">
+      <div class="bg-secondary rounded-full text-white">
+        <img src="@/assets/jejak-tanahku-logo.png" alt="" class="w-12 h-12" />
+      </div>
+
+      <h1 class="font-semibold">
+        Jejak <span class="text-primary">Tanahku</span>
+      </h1>
+    </div>
+    <UIcon
+      name="tabler:bell"
+      class="text-primary size-7 w-fit cursor-pointer"
+    />
   </header>
   <header
     v-else

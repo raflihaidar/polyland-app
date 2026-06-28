@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { useAuthStore } from "../../stores/auth.store";
-import { storeToRefs } from "pinia";
+// import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import { MetaMaskSDK } from "@metamask/sdk";
@@ -9,7 +9,7 @@ import * as z from "zod";
 
 const error = ref<string | null>(null);
 const store = useAuthStore();
-const { isAuthenticated, isMetaMaskSupported } = storeToRefs(store);
+// const { isAuthenticated, isMetaMaskSupported } = storeToRefs(store);
 const router = useRouter();
 
 const form = ref<Partial<Schema>>({

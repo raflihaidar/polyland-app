@@ -64,9 +64,10 @@ const handleApproved = useDebounceFn(async (id: string) => {
       }
     }
   } catch (error: any) {
+    console.log(error.response?.data?.message);
     toast.add({
       title: "Gagal",
-      description: error.response.data ?? "Gagal menyetujui akun.",
+      description: error.response?.data?.message ?? "Gagal menyetujui akun.",
     });
   } finally {
     isLoading.value = false;

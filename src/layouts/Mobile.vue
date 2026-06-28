@@ -1,14 +1,25 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import Header from "../components/shared/HeaderMobile.vue";
 import { useRoute } from "vue-router";
+import ButtomNavbar from "@/components/shared/ButtomNavbar.vue";
+import { useAccountStore } from "@/stores/account.store";
 
 const route = useRoute();
+const accountStore = useAccountStore();
+
+const isButtomNavbarVisible = computed(() =>
+  ["public.home", "profil"].includes(route.name as string),
+);
 
 const isAuthPage = computed(() => {
   return ["login", "register", "public.verify-certificate"].includes(
     route.name as string,
   );
+});
+
+onMounted(async () => {
+  await accountStore.checkAccount();
 });
 </script>
 
@@ -22,8 +33,11 @@ const isAuthPage = computed(() => {
       <Header v-if="!isAuthPage" />
 
       <!-- Content -->
-      <main class="flex-1 w-full bg-secondary px-5 pt-20 pb-24 overflow-y-auto">
+      <main
+        class="flex flex-col flex-1 w-full bg-secondary px-5 pt-20 pb-24 overflow-y-auto"
+      >
         <RouterView />
+        <ButtomNavbar v-if="isButtomNavbarVisible" />
       </main>
     </div>
   </div>

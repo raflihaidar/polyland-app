@@ -1,6 +1,6 @@
 export const verifikasiAkunRoutes = [
   {
-    path: "/verifikasi-akun",
+    path: "/verifikasi-akun/:id?",
     name: "verifikasi-akun",
     component: () => import("../views/verifikasi-akun/VerifikasiAkun.vue"),
     children: [

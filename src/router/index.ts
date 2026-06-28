@@ -181,12 +181,7 @@ router.beforeResolve(async (to, from, next) => {
     isAuthenticated.value &&
     (to.name === "login" || to.name === "register")
   ) {
-    const adminRoles = [
-      "admin kantah",
-      "kepala kantah",
-      "registration officer",
-      "notaris/PPAT",
-    ];
+    const adminRoles = ["admin kantah", "kepala kantah"];
 
     const userRoles = user.value?.roles || [];
     const isAdmin = userRoles.some((role) => adminRoles.includes(role));
@@ -207,12 +202,7 @@ router.beforeResolve(async (to, from, next) => {
   // =====================================
 
   if (to.meta.publicOnly) {
-    const ADMIN_ROLES = [
-      "admin kantah",
-      "kepala kantah",
-      "registration officer",
-      "notaris/PPAT",
-    ];
+    const ADMIN_ROLES = ["admin kantah", "kepala kantah"];
     const userRoles = user.value?.roles || [];
 
     const isAdmin = userRoles.some((role) => ADMIN_ROLES.includes(role));

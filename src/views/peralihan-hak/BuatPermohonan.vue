@@ -9,6 +9,7 @@ import type {
   CertificateData,
   Owner,
 } from "@/types";
+import { useConfirmDialog } from "@/composables/useConfirmModal";
 
 const router = useRouter();
 const route = useRoute();
@@ -17,12 +18,14 @@ const authStore = useAuthStore();
 const isLoading = ref(false);
 const editMode = ref(false);
 const api = useApiPrivate();
+const confirm = useConfirmDialog();
 
 const isViewMode = computed(
   () => !!route.params?.id && !route.path.includes("create"),
 );
 const detailData = ref<any>(null);
 const certificateList = ref<CertificateData[]>([]);
+const notes = ref<string[]>([]);
 
 type OwnerForm = Owner & {
   isSearching: boolean;
@@ -174,14 +177,16 @@ const searchCertificate = async (query: string) => {
     certificateList.value = [];
     return;
   }
+
   isLoading.value = true;
   if (certSearchTimeout) clearTimeout(certSearchTimeout);
   certSearchTimeout = setTimeout(async () => {
     try {
       const { data } = await api.get(`/certificate/search?q=${query}`);
       certificateList.value = data.data ?? [];
-    } catch {
-      certificateList.value = [];
+      console.log(certificateList.value);
+    } catch (error) {
+      console.log(error);
     } finally {
       isLoading.value = false;
     }
@@ -422,9 +427,50 @@ const handleUpdateStatus = async (status: any) => {
   } catch (error) {
     toast.add({
       title: "Terjadi Kesalahan",
-      description: "Gagal updat status permohonan. Coba lagi.",
+      description: "Gagal update status permohonan. Coba lagi.",
       color: "error",
     });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handlePaymentConfirmation = async () => {
+  try {
+    const isConfirmed = await confirm({
+      title: "Konfirmasi Pembayaran",
+      description:
+        "Apakah Anda yakin ingin memproses peralihan kepemilikan sertifikat tanah ini ke pemilik baru?",
+    });
+
+    if (!isConfirmed) return;
+
+    isLoading.value = true;
+
+    const { data } = await api.put(
+      `/ownership-transfer/verify/payment/${detailData.value.id}`,
+      {
+        notes: [...notes.value],
+      },
+    );
+
+    if (data.status === "success") {
+      toast.add({
+        title: data?.message ?? "Pembayaran Berhasil dikonfirmasi",
+        description: data.message,
+        color: "success",
+      });
+
+      await getApplicationDetail();
+    }
+  } catch (error) {
+    toast.add({
+      title: "Terjadi Kesalahan",
+      description: "Gagal update status permohonan. Coba lagi.",
+      color: "error",
+    });
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -491,6 +537,7 @@ onMounted(async () => {
         <UButton
           v-if="detailData?.status === 'MENUNGGU_PEMBAYARAN'"
           label="Konfirmasi Pembayaran"
+          @click="handlePaymentConfirmation()"
           color="warning"
         />
         <UButton
@@ -1039,7 +1086,7 @@ onMounted(async () => {
             <USelectMenu
               v-model="form.certificate"
               by="id"
-              label-key="nib"
+              label-key="code"
               :items="certificateList"
               class="w-full"
               placeholder="Ketik NIB atau kode sertifikat..."
