@@ -52,8 +52,8 @@ export const useApplicationStore = defineStore("application", () => {
         `/ownership-transfer?fileNumber=${fileNumber}`,
       );
       detailBerkas.value = data.data;
-      console.log(detailBerkas.value);
       return {
+        data: data.data,
         status: data.status,
         message: data.message,
       };

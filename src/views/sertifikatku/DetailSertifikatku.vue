@@ -8,7 +8,7 @@ import { keccak256 } from "viem";
 import { decrypt } from "eciesjs";
 import { Buffer } from "buffer";
 import type { CertificateDetail, CertificateType } from "@/types";
-import { formatDateIndonesia } from "@/utils/format";
+import { formatDateIndonesia } from "@/utils/formatter";
 import PdfViewer from "./components/PdfViewer.vue";
 import { useApiPrivate } from "@/composables/useApi";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";

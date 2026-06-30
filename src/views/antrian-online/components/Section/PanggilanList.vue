@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLoading from "@/components/shared/AppLoading.vue";
 import { useApiPrivate } from "@/composables/useApi";
-import { capitalizeFirstLetter, formatDateIndonesia } from "@/utils/format";
+import { capitalizeFirstLetter, formatDateIndonesia } from "@/utils/formatter";
 import { onMounted, ref } from "vue";
 
 const queueList = ref<any[]>([]);

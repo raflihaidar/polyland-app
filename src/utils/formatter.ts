@@ -17,3 +17,11 @@ export const capitalizeFirstLetter = (str: string) => {
 
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
+
+export const formatRupiah = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(value || 0);
+};

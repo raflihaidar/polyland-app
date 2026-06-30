@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useApiPrivate } from "@/composables/useApi";
-import { capitalizeFirstLetter, formatDateIndonesia } from "@/utils/format";
+import { capitalizeFirstLetter, formatDateIndonesia } from "@/utils/formatter";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 

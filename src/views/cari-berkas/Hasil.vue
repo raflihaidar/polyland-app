@@ -1,35 +1,25 @@
 <script setup lang="ts">
-import { provide, computed, ref } from "vue";
+import { provide, computed, ref, onMounted } from "vue";
 import { useApplicationStore } from "@/stores/application.store";
-// import {
-//   createPublicClient,
-//   createWalletClient,
-//   custom,
-//   parseUnits,
-//   http,
-//   parseGwei,
-// } from "viem";
-// import { polygonAmoy } from "viem/chains";
-// import PaymentABI from "../../abi/applicationPayment.json";
-// import ERC20ABI from "../../abi/erc20.json";
-import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { useApiPrivate } from "@/composables/useApi";
-
-// const paymentContractAddress = import.meta.env.VITE_PAYMENT_CONTRACT_ADDRESS_V4;
-// const usdcAddress = import.meta.env.VITE_USDC_ADDRESS;
+import { formatRupiah } from "@/utils/formatter";
+import type { ApplicationData } from "@/types";
+import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
+import AppLoading from "@/components/shared/AppLoading.vue";
 
 const route = useRoute();
+const toast = useToast();
+const fileNumber = route.query?.fileNumber as string;
 
-provide("head-title", `${route.query?.fileNumber}`);
+provide("head-title", `${fileNumber}`);
 
-const store = useApplicationStore();
-const { detailBerkas } = storeToRefs(store);
+const applicationStore = useApplicationStore();
 
 const api = useApiPrivate();
-const txHash = ref("");
-const error = ref("");
+const detailBerkas = ref<ApplicationData | null>(null);
 const loading = ref(false);
+const errorMessage = ref("");
 
 const statusBerkasMapping = [
   { value: "DIPROSES", label: "Diterima Loket" },
@@ -40,123 +30,37 @@ const statusBerkasMapping = [
   { value: "SELESAI", label: "Proses Selesai" },
 ];
 
-function toBytes32(str: string) {
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(str);
-  if (bytes.length > 32)
-    throw new Error("String terlalu panjang untuk bytes32");
-  const padded = new Uint8Array(32);
-  padded.set(bytes);
-  return (
-    "0x" +
-    Array.from(padded)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("")
-  );
-}
-
-// const handlePayment = async () => {
-//   try {
-//     loading.value = true;
-//     error.value = "";
-
-//     // 1. Inisialisasi Public Client untuk cek status transaksi
-//     const publicClient = createPublicClient({
-//       chain: polygonAmoy,
-//       transport: http(),
-//     });
-
-//     const walletClient = createWalletClient({
-//       chain: polygonAmoy,
-//       transport: custom(window.ethereum),
-//     });
-
-//     const [account] = await walletClient.requestAddresses();
-
-//     // Persiapan data
-//     const applicationIdBytes32 = toBytes32(detailBerkas.value?.file_number!);
-//     const kantahCodeBytes32 = toBytes32(detailBerkas.value?.landOffice.code!);
-//     const amount = parseUnits(String(detailBerkas.value?.total_fee), 6);
-
-//     // ======================
-//     // 1. APPROVE
-//     // ======================
-//     // Gunakan writeContract dan tunggu sampai transaksi sukses
-
-//     const fees = await publicClient.estimateFeesPerGas();
-
-//     const approveHash = await walletClient.writeContract({
-//       account,
-//       address: usdcAddress,
-//       abi: ERC20ABI,
-//       functionName: "approve",
-//       args: [paymentContractAddress, amount],
-//       maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
-//       maxFeePerGas: fees.maxFeePerGas,
-//     });
-
-//     // TUNGGU konfirmasi transaksi approve sebelum lanjut ke pay
-//     await publicClient.waitForTransactionReceipt({ hash: approveHash });
-
-//     // estimate gas
-//     const gas = await publicClient.estimateContractGas({
-//       account,
-//       address: paymentContractAddress,
-//       abi: PaymentABI,
-//       functionName: "pay",
-//       args: [
-//         applicationIdBytes32,
-//         kantahCodeBytes32,
-//         BigInt(detailBerkas.value?.land.area_size!),
-//       ],
-//     });
-
-//     // ======================
-//     // 2. PAY
-//     // ======================
-//     const payHash = await walletClient.writeContract({
-//       account,
-//       address: paymentContractAddress,
-//       abi: PaymentABI,
-//       functionName: "pay",
-//       args: [
-//         applicationIdBytes32,
-//         kantahCodeBytes32,
-//         BigInt(detailBerkas.value?.land.area_size!),
-//       ],
-//       gas,
-//       maxFeePerGas: parseGwei("40"),
-//       maxPriorityFeePerGas: parseGwei("30"),
-//     });
-
-//     txHash.value = payHash;
-//     alert("Pembayaran Berhasil!");
-//   } catch (err: any) {
-//     console.error(err);
-//     error.value = err.shortMessage || err.message || "User rejected request";
-//   } finally {
-//     loading.value = false;
-//   }
-// };
-
 const handlePayment = async () => {
-  try {
-    loading.value = true;
-    if (detailBerkas.value) {
-      await api.put(
-        `/ownership-transfer/status?fileNumber=${detailBerkas.value.file_number}`,
-        {
-          status: "PENANDATANGANAN",
-        },
-      );
-      store.searchApplication(detailBerkas.value.file_number);
-    }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    loading.value = false;
+  // try {
+  //   loading.value = true;
+  //   if (detailBerkas.value) {
+  //     await api.put(
+  //       `/ownership-transfer/status?fileNumber=${detailBerkas.value.file_number}`,
+  //       {
+  //         status: "PENANDATANGANAN",
+  //       },
+  //     );
+  //     applicationStore.searchApplication(detailBerkas.value.file_number);
+  //   }
+  // } catch (error) {
+  //   console.log(error);
+  // } finally {
+  //   loading.value = false;
+  // }
+  console.log("upcoming...");
+};
+
+const getDetailApplication = async () => {
+  const { data, status, message } =
+    await applicationStore.searchApplication(fileNumber);
+
+  if (status === "success") {
+    detailBerkas.value = data;
+  } else {
+    errorMessage.value = message;
   }
 };
+
 const statusBerkasLookup = computed(() => {
   return Object.fromEntries(statusBerkasMapping.map((s) => [s.value, s.label]));
 });
@@ -181,88 +85,100 @@ const showPaymentButton = computed(() => {
   return detailBerkas.value?.status === "MENUNGGU_PEMBAYARAN";
 });
 
-const formatRupiah = (value: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(value || 0);
-};
+onMounted(() => {
+  getDetailApplication();
+});
 </script>
 
 <template>
-  <section v-if="detailBerkas" class="p-2">
-    <!-- Header -->
-    <section class="w-full flex justify-between items-start flex-col">
-      <p class="font-bold text-lg">Peralihan Hak Jual Beli</p>
-      <p :class="['font-semibold', 'text-sm', statusColor]" class="text-nowrap">
-        {{ statusLabel }}
-      </p>
+  <section v-if="applicationStore.isLoading('FETCH_DETAIL')">
+    <AppLoading />
+  </section>
+  <section class="relative w-full h-full">
+    <section v-if="detailBerkas" class="p-2">
+      <section class="w-full flex justify-between items-start flex-col">
+        <p class="font-bold text-lg">Peralihan Hak Jual Beli</p>
+        <p
+          :class="['font-semibold', 'text-sm', statusColor]"
+          class="text-nowrap"
+        >
+          {{ statusLabel }}
+        </p>
+      </section>
+
+      <section class="w-full mt-5 border-b border-slate-200 pb-3">
+        <div class="flex items-center justify-between mb-3">
+          <p>Biaya</p>
+          <p>{{ formatRupiah(detailBerkas.total_fee) }}</p>
+        </div>
+
+        <div class="flex items-center justify-between mb-3">
+          <p>Petugas</p>
+          <p>-</p>
+        </div>
+
+        <div class="flex items-center justify-between mb-3">
+          <p>Dibuat</p>
+          <p>{{ detailBerkas.createdAt }}</p>
+        </div>
+
+        <div class="flex items-center justify-between mb-3">
+          <p>Selesai</p>
+          <p>{{ detailBerkas.paidAt || "-" }}</p>
+        </div>
+      </section>
+
+      <!-- Tombol Pembayaran -->
+      <section v-if="showPaymentButton" class="mt-5">
+        <UButton
+          block
+          :loading="loading"
+          label="Bayar Sekarang"
+          @click="handlePayment"
+        />
+      </section>
+
+      <!-- Pemohon -->
+      <section class="w-full mt-5 border-b border-slate-200 pb-3">
+        <p class="font-bold mb-2">Pemohon</p>
+        <p>{{ detailBerkas.person.name }}</p>
+      </section>
+
+      <!-- Kontak Kantor -->
+      <section class="w-full mt-5 border-b border-slate-200 pb-3">
+        <p class="font-bold mb-3">Kontak Kantor</p>
+
+        <div class="mb-3">
+          <p class="font-medium">{{ detailBerkas.landOffice.name }}</p>
+          <p class="text-sm text-gray-600">
+            {{ detailBerkas.landOffice.address }}
+          </p>
+        </div>
+
+        <div class="mb-3">
+          <p>Email</p>
+          <p class="text-sm text-gray-600">
+            {{ detailBerkas.landOffice.email }}
+          </p>
+        </div>
+
+        <div>
+          <p>Telp</p>
+          <p class="text-sm text-gray-600">
+            {{ detailBerkas.landOffice.phone }}
+          </p>
+        </div>
+      </section>
     </section>
-
-    <!-- Informasi Biaya -->
-    <section class="w-full mt-5 border-b border-slate-200 pb-3">
-      <div class="flex items-center justify-between mb-3">
-        <p>Biaya</p>
-        <p>{{ formatRupiah(detailBerkas.total_fee) }}</p>
-      </div>
-
-      <div class="flex items-center justify-between mb-3">
-        <p>Petugas</p>
-        <p>-</p>
-      </div>
-
-      <div class="flex items-center justify-between mb-3">
-        <p>Dibuat</p>
-        <p>{{ detailBerkas.createdAt }}</p>
-      </div>
-
-      <div class="flex items-center justify-between mb-3">
-        <p>Selesai</p>
-        <p>{{ detailBerkas.paidAt || "-" }}</p>
-      </div>
-    </section>
-
-    <!-- Tombol Pembayaran -->
-    <section v-if="showPaymentButton" class="mt-5">
-      <UButton
-        block
-        :loading="loading"
-        label="Bayar Sekarang"
-        @click="handlePayment"
+    <section
+      v-else
+      class="w-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+    >
+      <UEmpty
+        icon="tabler:file-sad"
+        title="Berkas tidak ditemukan"
+        :description="errorMessage"
       />
-    </section>
-
-    <!-- Pemohon -->
-    <section class="w-full mt-5 border-b border-slate-200 pb-3">
-      <p class="font-bold mb-2">Pemohon</p>
-      <p>{{ detailBerkas.person.name }}</p>
-    </section>
-
-    <!-- Kontak Kantor -->
-    <section class="w-full mt-5 border-b border-slate-200 pb-3">
-      <p class="font-bold mb-3">Kontak Kantor</p>
-
-      <div class="mb-3">
-        <p class="font-medium">{{ detailBerkas.landOffice.name }}</p>
-        <p class="text-sm text-gray-600">
-          {{ detailBerkas.landOffice.address }}
-        </p>
-      </div>
-
-      <div class="mb-3">
-        <p>Email</p>
-        <p class="text-sm text-gray-600">
-          {{ detailBerkas.landOffice.email }}
-        </p>
-      </div>
-
-      <div>
-        <p>Telp</p>
-        <p class="text-sm text-gray-600">
-          {{ detailBerkas.landOffice.phone }}
-        </p>
-      </div>
     </section>
   </section>
 </template>

@@ -5,11 +5,15 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
 const toasterConfig = {
-  position: "top-right", // Options: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  position: "top-right",
 };
 
 import { useAuthStore } from "./stores/auth.store";
 const store = useAuthStore();
-store.attempt();
+
+onMounted(() => {
+  store.attempt();
+});
 </script>
