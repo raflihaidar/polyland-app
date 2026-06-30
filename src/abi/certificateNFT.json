@@ -5,11 +5,6 @@
                 "internalType": "address",
                 "name": "admin",
                 "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "paymentAddress",
-                "type": "address"
             }
         ],
         "stateMutability": "nonpayable",
@@ -199,16 +194,29 @@
                 "type": "uint256"
             },
             {
-                "indexed": true,
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-            },
-            {
                 "indexed": false,
                 "internalType": "string",
                 "name": "cid",
                 "type": "string"
+            }
+        ],
+        "name": "CertificateCIDSet",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "recipient",
+                "type": "address"
             }
         ],
         "name": "CertificateMinted",
@@ -373,6 +381,25 @@
                 "internalType": "bytes32",
                 "name": "",
                 "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "_certificateCID",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
             }
         ],
         "stateMutability": "view",
@@ -553,19 +580,28 @@
     {
         "inputs": [
             {
-                "internalType": "string",
-                "name": "applicationId",
-                "type": "string"
-            },
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "isVerified",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
             {
                 "internalType": "address",
                 "name": "recipient",
                 "type": "address"
-            },
-            {
-                "internalType": "string",
-                "name": "cid",
-                "type": "string"
             }
         ],
         "name": "mintCertificate",
@@ -604,19 +640,6 @@
         "outputs": [
             {
                 "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "paymentContract",
-        "outputs": [
-            {
-                "internalType": "contract IPayment",
                 "name": "",
                 "type": "address"
             }
@@ -764,6 +787,24 @@
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "cid",
+                "type": "string"
+            }
+        ],
+        "name": "setCertificateCID",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "bytes4",
                 "name": "interfaceId",
                 "type": "bytes4"
@@ -846,6 +887,11 @@
                 "internalType": "address",
                 "name": "newOwner",
                 "type": "address"
+            },
+            {
+                "internalType": "string",
+                "name": "newCid",
+                "type": "string"
             }
         ],
         "name": "transferOwnershipByBPN",
