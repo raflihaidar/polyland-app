@@ -73,20 +73,36 @@ const docTypeToLabel: Record<string, string> = {
   KK_PEMBELI: "KK Pembeli",
 };
 
-const statusColor: Record<string, string> = {
-  VERIFIKASI_BERKAS: "info",
-  DISETUJUI: "success",
-  DITOLAK: "error",
-  SELESAI: "success",
+const statusColor: Record<string, any> = {
+  VERIFIKASI_BERKAS: "warning",
   MENUNGGU_PEMBAYARAN: "warning",
+  VERIFIKASI_PEMBAYARAN: "info",
+  PENERBITAN_SERTIFIKAT: "primary",
+
+  PEMBAYARAN_DIBATALKAN: "error",
+  PEMBAYARAN_KADALUARSA: "error",
+  PEMBAYARAN_DIKEMBALIKAN: "warning",
+
+  DITOLAK: "error",
+  TERJADI_KESALAHAN: "error",
+
+  SELESAI: "success",
 };
 
 const statusLabel: Record<string, string> = {
-  DIPROSES: "Sedang Diproses",
-  DISETUJUI: "Disetujui",
-  DITOLAK: "Ditolak",
-  SELESAI: "Selesai",
+  VERIFIKASI_BERKAS: "Verifikasi Berkas",
   MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
+  VERIFIKASI_PEMBAYARAN: "Verifikasi Pembayaran",
+  PENERBITAN_SERTIFIKAT: "Penerbitan Sertifikat",
+
+  PEMBAYARAN_DIBATALKAN: "Pembayaran Dibatalkan",
+  PEMBAYARAN_KADALUARSA: "Pembayaran Kedaluwarsa",
+  PEMBAYARAN_DIKEMBALIKAN: "Pembayaran Dikembalikan",
+
+  DITOLAK: "Ditolak",
+  TERJADI_KESALAHAN: "Terjadi Kesalahan",
+
+  SELESAI: "Selesai",
 };
 
 const sharedDocs = computed(
@@ -435,12 +451,12 @@ const handleUpdateStatus = async (status: any) => {
   }
 };
 
-const handlePaymentConfirmation = async () => {
+const handleGenerateCertificate = async () => {
   try {
     const isConfirmed = await confirm({
-      title: "Konfirmasi Pembayaran",
+      title: "Penerbitan Sertifikat",
       description:
-        "Apakah Anda yakin ingin memproses peralihan kepemilikan sertifikat tanah ini ke pemilik baru?",
+        "Apakah Anda yakin ingin memulai proses penerbitan sertifikat untuk permohonan ini?",
     });
 
     if (!isConfirmed) return;
@@ -456,8 +472,10 @@ const handlePaymentConfirmation = async () => {
 
     if (data.status === "success") {
       toast.add({
-        title: data?.message ?? "Pembayaran Berhasil dikonfirmasi",
-        description: data.message,
+        title: "Proses Berhasil Dimulai",
+        description:
+          data?.message ??
+          "Permohonan penerbitan sertifikat sedang diproses.",
         color: "success",
       });
 
@@ -466,7 +484,8 @@ const handlePaymentConfirmation = async () => {
   } catch (error) {
     toast.add({
       title: "Terjadi Kesalahan",
-      description: "Gagal update status permohonan. Coba lagi.",
+      description:
+        "Gagal memproses penerbitan sertifikat. Silakan coba lagi.",
       color: "error",
     });
   } finally {
@@ -511,12 +530,14 @@ onMounted(async () => {
       />
 
       <div class="flex gap-x-3 items-center" v-if="isViewMode && !editMode">
+        <!-- Verifikasi Berkas -->
         <UButton
           v-if="detailData?.status === 'VERIFIKASI_BERKAS'"
           label="Tolak Permohonan"
           @click="handleUpdateStatus('DITOLAK')"
           color="primary"
         />
+
         <UButton
           v-if="detailData?.status === 'VERIFIKASI_BERKAS'"
           label="Lanjut ke Pembayaran"
@@ -524,22 +545,7 @@ onMounted(async () => {
           color="warning"
           variant="outline"
         />
-        <UButton
-          v-if="detailData?.status === 'PENANDATANGANAN'"
-          label="Selesai"
-          color="success"
-        />
-        <UButton
-          v-if="detailData?.status === 'PENANDATANGANAN'"
-          label="Tandai Selesai"
-          color="success"
-        />
-        <UButton
-          v-if="detailData?.status === 'MENUNGGU_PEMBAYARAN'"
-          label="Konfirmasi Pembayaran"
-          @click="handlePaymentConfirmation()"
-          color="warning"
-        />
+
         <UButton
           v-if="detailData?.status === 'VERIFIKASI_BERKAS'"
           label="Edit"
@@ -547,6 +553,20 @@ onMounted(async () => {
           color="warning"
           icon="lucide:edit"
         />
+
+        <UButton
+          v-if="detailData?.status === 'VERIFIKASI_PEMBAYARAN'"
+          label="Terbitkan Sertifikat"
+          @click="handleGenerateCertificate()"
+          color="primary"
+        />
+
+        <!-- <UButton
+          v-if="detailData?.status === 'PENERBITAN_SERTIFIKAT'"
+          label="Tandai Selesai"
+          @click="handleUpdateStatus('SELESAI')"
+          color="success"
+        /> -->
       </div>
     </section>
 

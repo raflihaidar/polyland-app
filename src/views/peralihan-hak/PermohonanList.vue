@@ -44,20 +44,34 @@ const pagination = ref({
 
 // Status badge color mapping
 const statusColorMap: Record<string, any> = {
-  DIPROSES: "info",
   VERIFIKASI_BERKAS: "warning",
   MENUNGGU_PEMBAYARAN: "warning",
-  PENANDATANGANAN: "primary",
+  VERIFIKASI_PEMBAYARAN: "info",
+  PENERBITAN_SERTIFIKAT: "primary",
+
+  PEMBAYARAN_DIBATALKAN: "error",
+  PEMBAYARAN_KADALUARSA: "error",
+  PEMBAYARAN_DIKEMBALIKAN: "warning",
+
   DITOLAK: "error",
+  TERJADI_KESALAHAN: "error",
+
   SELESAI: "success",
 };
 
 const statusLabelMap: Record<string, string> = {
-  DIPROSES: "Diproses",
   VERIFIKASI_BERKAS: "Verifikasi Berkas",
   MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
-  PENANDATANGANAN: "Penandatanganan",
+  VERIFIKASI_PEMBAYARAN: "Verifikasi Pembayaran",
+  PENERBITAN_SERTIFIKAT: "Penerbitan Sertifikat",
+
+  PEMBAYARAN_DIBATALKAN: "Pembayaran Dibatalkan",
+  PEMBAYARAN_KADALUARSA: "Pembayaran Kedaluwarsa",
+  PEMBAYARAN_DIKEMBALIKAN: "Pembayaran Dikembalikan",
+
   DITOLAK: "Ditolak",
+  TERJADI_KESALAHAN: "Terjadi Kesalahan",
+
   SELESAI: "Selesai",
 };
 
