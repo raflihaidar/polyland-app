@@ -18,52 +18,19 @@ const links = [
     },
     {
       label: "Antrian Online",
-      to: "/admin/antrian-online",
+      to: "/admin/antrian-online/list",
       icon: "fluent:people-queue-32-regular",
-      defaultOpen: false,
-      type: "trigger",
-      children: [
-        // {
-        //   label: "Dashboard",
-        //   to: "/admin/antrian-online/dashboard",
-        //   exact: true,
-        //   onSelect: () => {
-        //     open.value = false;
-        //   },
-        // },
-        {
-          label: "Antrian",
-          to: "/admin/antrian-online/list",
-          onSelect: () => {
-            open.value = false;
-          },
-        },
-      ],
+      onSelect: () => {
+        open.value = false;
+      },
     },
     {
       label: "Peralihan Hak",
-      to: "/admin/peralihan-hak",
+      to: "/admin/peralihan-hak/list-permohonan",
       icon: "grommet-icons:document-transfer",
-      defaultOpen: false,
-      type: "trigger",
-      children: [
-        {
-          label: "Dashboard",
-          to: "/admin/peralihan-hak/dashboard",
-          exact: true,
-          onSelect: () => {
-            open.value = false;
-          },
-        },
-        {
-          label: "Permohonan",
-          to: "/admin/peralihan-hak/list-permohonan",
-          exact: true,
-          onSelect: () => {
-            open.value = false;
-          },
-        },
-      ],
+      onSelect: () => {
+        open.value = false;
+      },
     },
     {
       label: "Hak Akses",

@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-  h,
-  ref,
-  watch,
-  resolveComponent,
-  onMounted,
-} from "vue";
+import { h, ref, watch, resolveComponent, onMounted } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import { getPaginationRowModel, type Row } from "@tanstack/table-core";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
@@ -47,7 +41,7 @@ const statusColorMap: Record<string, any> = {
   VERIFIKASI_BERKAS: "warning",
   MENUNGGU_PEMBAYARAN: "warning",
   VERIFIKASI_PEMBAYARAN: "info",
-  PENERBITAN_SERTIFIKAT: "primary",
+  PROSES_PENERBITAN: "primary",
 
   PEMBAYARAN_DIBATALKAN: "error",
   PEMBAYARAN_KADALUARSA: "error",
@@ -63,7 +57,7 @@ const statusLabelMap: Record<string, string> = {
   VERIFIKASI_BERKAS: "Verifikasi Berkas",
   MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
   VERIFIKASI_PEMBAYARAN: "Verifikasi Pembayaran",
-  PENERBITAN_SERTIFIKAT: "Penerbitan Sertifikat",
+  PROSES_PENERBITAN: "Dalam Proses Penerbitan",
 
   PEMBAYARAN_DIBATALKAN: "Pembayaran Dibatalkan",
   PEMBAYARAN_KADALUARSA: "Pembayaran Kedaluwarsa",
@@ -74,7 +68,6 @@ const statusLabelMap: Record<string, string> = {
 
   SELESAI: "Selesai",
 };
-
 
 const columns: TableColumn<any>[] = [
   {
@@ -219,7 +212,6 @@ const getApplicationList = async () => {
   }
 };
 
-
 watch(
   () => statusFilter.value,
   () => {
@@ -269,13 +261,13 @@ onMounted(async () => {
 <template>
   <!-- Filter Bar -->
   <div class="flex flex-wrap items-center justify-between gap-1.5">
-    <div class="flex items-center gap-x-3">
+    <div class="flex items-center gap-x-3 w-1/2">
       <!-- Search Input -->
       <UInput
         v-model="searchQuery"
-        class="max-w-sm"
+        class="w-1/2"
         icon="i-lucide-search"
-        placeholder="Cari nama pemohon / NIB..."
+        placeholder="Cari nomor berkas / nama pemohon"
       />
     </div>
 

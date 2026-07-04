@@ -25,3 +25,12 @@ export const formatRupiah = (value: number) => {
     minimumFractionDigits: 0,
   }).format(value || 0);
 };
+
+export const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });

@@ -60,6 +60,7 @@ const routes = [
     },
     meta: {
       requiresAuth: true,
+      title: "Dashboard",
       roles: [
         "admin aplikasi",
         "kepala kanwil",
