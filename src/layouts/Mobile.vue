@@ -13,7 +13,7 @@ const isButtomNavbarVisible = computed(() =>
 );
 
 const isAuthPage = computed(() => {
-  return ["login", "register", "public.verify-certificate"].includes(
+  return ["login", "register", "public.verify-certificate", 'hasil pembayaran'].includes(
     route.name as string,
   );
 });

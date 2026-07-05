@@ -51,6 +51,8 @@ const openModal = () => {
   if (certificate.value && certificate.value.label) {
     tempLabel.value = certificate.value.label;
     modalLabel.value = true;
+  }else{
+    modalLabel.value = true
   }
 };
 
@@ -210,7 +212,6 @@ onMounted(async () => {
               class="size-5 cursor-pointer m-0 p-0"
             />
           </div>
-          <!-- <p v-else>{{ certificate.label }}</p> -->
           <h3 class="text-sm font-medium">
             {{ certificate?.nib }}
           </h3>

@@ -2,21 +2,18 @@
 import { provide, computed, ref, onMounted } from "vue";
 import { useApplicationStore } from "@/stores/application.store";
 import { useRoute } from "vue-router";
-import { useApiPrivate } from "@/composables/useApi";
-import { formatRupiah } from "@/utils/formatter";
-import type { ApplicationData } from "@/types";
-import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
+import { formatRupiah, formatDateIndonesia } from "@/utils/formatter";
+import { statusTextColor, type ApplicationData } from "@/types";
 import AppLoading from "@/components/shared/AppLoading.vue";
+import { router } from "@/router";
 
 const route = useRoute();
-const toast = useToast();
 const fileNumber = route.query?.fileNumber as string;
 
 provide("head-title", `${fileNumber}`);
 
 const applicationStore = useApplicationStore();
 
-const api = useApiPrivate();
 const detailBerkas = ref<ApplicationData | null>(null);
 const loading = ref(false);
 const errorMessage = ref("");
@@ -25,29 +22,16 @@ const statusBerkasMapping = [
   { value: "DIPROSES", label: "Diterima Loket" },
   { value: "VERIFIKASI_BERKAS", label: "Tahap Verifikasi" },
   { value: "MENUNGGU_PEMBAYARAN", label: "Menunggu Pembayaran" },
-  { value: "PENANDATANGANAN", label: "Menunggu Penandatanganan Dokumen" },
+  { value: "VERIFIKASI_PEMBAYARAN", label: "Tahap Verifikasi Pembayaran" },
+  { value: "PROSES_PENERBITAN", label: "Proses Penerbitan Sertifikat" },
   { value: "DITOLAK", label: "Pengajuan Ditolak" },
   { value: "SELESAI", label: "Proses Selesai" },
 ];
 
 const handlePayment = async () => {
-  // try {
-  //   loading.value = true;
-  //   if (detailBerkas.value) {
-  //     await api.put(
-  //       `/ownership-transfer/status?fileNumber=${detailBerkas.value.file_number}`,
-  //       {
-  //         status: "PENANDATANGANAN",
-  //       },
-  //     );
-  //     applicationStore.searchApplication(detailBerkas.value.file_number);
-  //   }
-  // } catch (error) {
-  //   console.log(error);
-  // } finally {
-  //   loading.value = false;
-  // }
-  console.log("upcoming...");
+  if(detailBerkas.value){
+    router.push(`/cari-berkas/pembayaran/${detailBerkas.value.payment.order_id}`)
+  }
 };
 
 const getDetailApplication = async () => {
@@ -99,7 +83,7 @@ onMounted(() => {
       <section class="w-full flex justify-between items-start flex-col">
         <p class="font-bold text-lg">Peralihan Hak Jual Beli</p>
         <p
-          :class="['font-semibold', 'text-sm', statusColor]"
+          :class="['font-semibold', 'text-sm', statusTextColor[detailBerkas.status]]"
           class="text-nowrap"
         >
           {{ statusLabel }}
@@ -109,22 +93,22 @@ onMounted(() => {
       <section class="w-full mt-5 border-b border-slate-200 pb-3">
         <div class="flex items-center justify-between mb-3">
           <p>Biaya</p>
-          <p>{{ formatRupiah(detailBerkas.total_fee) }}</p>
+          <p class="text-primary font-medium">{{ formatRupiah(detailBerkas.total_fee) }}</p>
         </div>
 
         <div class="flex items-center justify-between mb-3">
           <p>Petugas</p>
-          <p>-</p>
+          <p>{{detailBerkas.officer?.name || '-' }}</p>
         </div>
 
         <div class="flex items-center justify-between mb-3">
           <p>Dibuat</p>
-          <p>{{ detailBerkas.createdAt }}</p>
+          <p>{{ formatDateIndonesia(detailBerkas.createdAt) }}</p>
         </div>
 
         <div class="flex items-center justify-between mb-3">
           <p>Selesai</p>
-          <p>{{ detailBerkas.paidAt || "-" }}</p>
+          <p>{{ formatDateIndonesia(detailBerkas.payment.paidAt) || "-" }}</p>
         </div>
       </section>
 

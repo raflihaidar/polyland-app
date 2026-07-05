@@ -19,4 +19,24 @@ export const cariBerkasRoutes = [
       privilege: "peralihan-hak",
     },
   },
+  {
+    path: "/cari-berkas/pembayaran/:orderId",
+    name: "pembayaran permohonan",
+    component: () => import("../views/cari-berkas/Pembayaran.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "Detail Pembayaran",
+      privilege: "peralihan-hak",
+    },
+  },
+    {
+    path: "/cari-berkas/pembayaran/:orderId/result",
+    name: "hasil pembayaran",
+    component: () => import("../views/cari-berkas/HasilPembayaran.vue"),
+    meta: {
+      requiresAuth: true,
+      title: "Hasil Pembayaran",
+      privilege: "peralihan-hak",
+    },
+  },
 ];

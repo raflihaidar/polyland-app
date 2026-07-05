@@ -355,7 +355,7 @@ onMounted(async () => {
       />
 
       <!-- Loket Selector -->
-      <UPopover
+      <!-- <UPopover
         :content="{
           align: 'start',
           side: 'bottom',
@@ -383,7 +383,7 @@ onMounted(async () => {
             </div>
           </div>
         </template>
-      </UPopover>
+      </UPopover> -->
     </div>
 
     <div class="flex flex-wrap items-center gap-1.5">

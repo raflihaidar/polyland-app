@@ -45,3 +45,11 @@ export const DocumentType = {
 } as const;
 
 export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType];
+
+export enum PaymentStatus  {
+  PENDING = 'PENDING',
+  SUCCESS = 'SUCCESS',
+  EXPIRED = 'EXPIRED',
+  CANCELED = 'CANCELED',
+  REFUND = 'REFUND',
+}

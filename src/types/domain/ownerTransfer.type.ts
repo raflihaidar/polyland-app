@@ -3,6 +3,7 @@ import type {
   DocumentType,
   ApplicationStatus,
   ApplicationType,
+  PaymentStatus,
 } from "../enums";
 import type { LandView } from "./land.type";
 import type { Person, Officer } from "./person.type";
@@ -57,6 +58,7 @@ export interface ApplicationData {
   land: Land;
   landOffice: LandOffice;
   canPay: boolean;
+  payment : {order_id : string, paidAt : 'string'}
 }
 
 export interface Land {
@@ -125,6 +127,20 @@ export interface ApplicationDocument {
   createdAt: string;
 }
 
+export interface ApplicationPayment {
+  id : string,
+  order_id : string,
+  expireAt : string,
+  createdAt : string,
+  status : PaymentStatus,
+  qr_url : string,
+  amount : number,
+  application : {
+    id : string,
+    file_number : string
+  }
+}
+
 type PersonView = Pick<Person, "id" | "name" | "nik" | "email" | "phone"> & {
   ktp_pembeli: ApplicationDocument | File | null;
   kk_pembeli: ApplicationDocument | File | null;
@@ -185,6 +201,19 @@ export const statusColor: Record<string, any> = {
   TERJADI_KESALAHAN: "error",
 
   SELESAI: "success",
+};
+
+export const statusTextColor: Record<string, string> = {
+  VERIFIKASI_BERKAS: "text-yellow-600",
+  MENUNGGU_PEMBAYARAN: "text-yellow-600",
+  VERIFIKASI_PEMBAYARAN: "text-blue-600",
+  PROSES_PENERBITAN: "text-primary",
+  PEMBAYARAN_DIBATALKAN: "text-red-600",
+  PEMBAYARAN_KADALUARSA: "text-red-600",
+  PEMBAYARAN_DIKEMBALIKAN: "text-yellow-600",
+  DITOLAK: "text-red-600",
+  TERJADI_KESALAHAN: "text-red-600",
+  SELESAI: "text-green-600",
 };
 
 export const statusLabel: Record<string, string> = {
