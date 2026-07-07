@@ -1,282 +1,273 @@
-<script setup>
-import { onMounted, ref, computed, nextTick } from 'vue'
-import VuePdfEmbed from 'vue-pdf-embed'
-import QrcodeVue from 'qrcode.vue'
-import pdfFile from './assets/sertifikat.pdf'
-
-const pdfUrl = ref(null)
-const totalPages = ref(2)
-const currentPage = ref(1)
-const baseWidth = ref(0)
-const isLoading = ref(false)
-const pdfContainer = ref(null)
-
-const scale = ref(1.0)
-
-const updateWidth = () => {
-  if (pdfContainer.value) {
-    baseWidth.value = pdfContainer.value.clientWidth
-  } else {
-    baseWidth.value = window.innerWidth - 32
-  }
+const addNftToWallet = async (
+contractAddress: string,
+tokenId: string
+) => {
+if (!window.ethereum) {
+throw new Error("MetaMask tidak ditemukan");
 }
 
-const computedWidth = computed(() => baseWidth.value * scale.value)
+try {
+const wasAdded = await window.ethereum.request({
+method: "wallet_watchAsset",
+params: {
+type: "ERC721",
+options: {
+address: contractAddress,
+tokenId,
+},
+},
+});
 
-const zoomIn = () => {
-  if (scale.value < 2.5) {
-    isLoading.value = true
-    scale.value = parseFloat((scale.value + 0.2).toFixed(1))
-  }
+    if (wasAdded) {
+      console.log("NFT berhasil ditambahkan");
+    } else {
+      console.log("User membatalkan");
+    }
+
+} catch (error) {
+console.error(error);
 }
+};
 
-const zoomOut = () => {
-  if (scale.value > 1.0) {
-    isLoading.value = true
-    scale.value = parseFloat((scale.value - 0.2).toFixed(1))
-  }
+const importNFTToMetamask = async () => {
+if (typeof window.ethereum !== "undefined") {
+try {
+const wasAdded = await window.ethereum.request({
+method: "wallet_watchAsset",
+params: {
+type: "ERC721", // Supported asset type for NFTs
+options: {
+address: "0xYourNFTContractAddress",
+symbol: "SYMBOL", // Collection ticker/symbol (up to 5 chars)
+tokenId: "1234", // Specific Token ID of your NFT
+image: "https://your-image-url.com", // Optional preview URL
+decimals: 0 // MUST be 0 for NFTs
+},
+},
+});
+
+      if (wasAdded) {
+        console.log("NFT successfully imported!");
+      } else {
+        console.log("User rejected the NFT import.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+} else {
+console.log("MetaMask is not installed!");
 }
+};
 
-const handleDocumentLoad = (pdf) => {
-  totalPages.value = pdf.numPages
-}
+    <!-- Statistik Antrian Online -->
+    <UCard>
+      <template #header>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-tabler-users-group" class="size-5 text-primary" />
+            <span class="font-semibold text-highlighted">
+              Statistik Antrian Online
+            </span>
+          </div>
+          <UBadge color="success" variant="subtle" class="gap-1">
+            <UIcon name="i-tabler-circle-filled" class="size-2" />
+            Live
+          </UBadge>
+        </div>
+      </template>
 
-const handleDocumentRendered = () => {
-  isLoading.value = false
-}
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Nomor antrian saat ini -->
+        <div
+          class="flex flex-col items-center justify-center gap-2 p-4 rounded-lg bg-primary/5 border border-primary/20"
+        >
+          <span class="text-xs text-muted">Sedang Dilayani</span>
+          <span class="text-3xl font-bold text-primary font-mono">
+            {{ queueStats.currentNumber || "-" }}
+          </span>
+          <span class="text-xs text-muted">
+            Berikutnya:
+            <span class="font-semibold text-highlighted">
+              {{ queueStats.nextNumber || "-" }}
+            </span>
+          </span>
+        </div>
 
-const goToPrevPage = () => {
-  if (currentPage.value > 1) {
-    isLoading.value = true
-    currentPage.value--
-  }
-}
-
-const goToNextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    isLoading.value = true
-    currentPage.value++
-  }
-}
-
-const isLastPage = computed(() => currentPage.value === totalPages.value)
-
-onMounted(() => {
-  pdfUrl.value = pdfFile
-
-  nextTick(() => {
-    updateWidth()
-  })
-
-  window.addEventListener('resize', updateWidth)
-  window.addEventListener('orientationchange', () => {
-    setTimeout(updateWidth, 200)
-  })
-})
-</script>
-
-<template>
-  <div class="flex justify-center items-center min-h-screen h-auto">
-    <div class="shadow-2xl min-h-screen h-auto w-full max-w-md flex flex-col">
-      <div class="w-full bg-secondary pt-20 px-5 pb-24 flex-1 h-full">
-        <div class="detail-container">
-          <!-- Header -->
-          <div class="cert-header">
-            <p class="cert-label">NIB Sertifikat</p>
+        <!-- Ringkasan angka -->
+        <div class="flex flex-col gap-3 md:col-span-2">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-muted">Total Hari Ini</span>
+              <span class="text-lg font-bold text-highlighted">
+                {{ queueStats.totalToday }}
+              </span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-muted">Menunggu</span>
+              <span class="text-lg font-bold text-warning">
+                {{ queueStats.waiting }}
+              </span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-muted">Dilayani</span>
+              <span class="text-lg font-bold text-info">
+                {{ queueStats.serving }}
+              </span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="text-xs text-muted">Selesai</span>
+              <span class="text-lg font-bold text-success">
+                {{ queueStats.completed }}
+              </span>
+            </div>
           </div>
 
-          <!-- PDF Viewer -->
-          <div v-if="pdfUrl" class="pdf-section">
-            <!-- Navigasi Halaman dan Fitur Zoom -->
-            <div class="controls-wrapper">
-              <div class="page-nav">
-                <button class="nav-btn" :disabled="currentPage === 1" @click="goToPrevPage">
-                  ‹ Prev
-                </button>
-                <span class="page-info">Hal {{ currentPage }} / {{ totalPages }}</span>
-                <button
-                  class="nav-btn"
-                  :disabled="currentPage === totalPages"
-                  @click="goToNextPage"
-                >
-                  Next ›
-                </button>
-              </div>
-
-              <!-- Tombol Zoom In & Out -->
-              <div class="zoom-controls">
-                <button class="zoom-btn" :disabled="scale <= 1.0" @click="zoomOut">➖</button>
-                <span class="zoom-info">{{ Math.round(scale * 100) }}%</span>
-                <button class="zoom-btn" :disabled="scale >= 2.5" @click="zoomIn">➕</button>
-              </div>
-            </div>
-
-            <!-- Wrapper anchor untuk QR overlay -->
-            <div class="pdf-section-wrapper">
-              <!-- PDF Card -->
-              <div class="pdf-card">
-                <div class="pdf-wrapper" ref="pdfContainer">
-                  <div v-if="isLoading" class="pdf-loading">Memuat halaman...</div>
-                  <vue-pdf-embed
-                    :source="pdfUrl"
-                    :page="currentPage"
-                    :width="computedWidth"
-                    @loaded="handleDocumentLoad"
-                    @rendered="handleDocumentRendered"
-                  />
-                </div>
-              </div>
-
-              <div v-if="isLastPage && totalPages > 1" class="qr-overlay">
-                <div class="qr-box">
-                  <qrcode-vue :value="`https://jejak-tanahku.id/1`" :size="30" level="H" />
-                </div>
-              </div>
-            </div>
+          <div class="flex items-center gap-2 pt-3 border-t border-default">
+            <UIcon name="i-tabler-clock-hour-3" class="size-4 text-muted" />
+            <span class="text-sm text-muted">
+              Rata-rata waktu tunggu:
+              <span class="font-semibold text-highlighted">
+                {{ queueStats.avgWaitMinutes }} menit
+              </span>
+            </span>
           </div>
         </div>
       </div>
+    </UCard>
+
+
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Status Jaringan Blockchain (Polygon) -->
+      <UCard class="lg:col-span-1">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon name="i-tabler-cube" class="size-5 text-primary" />
+            <span class="font-semibold text-highlighted">
+              Status Jaringan Blockchain
+            </span>
+          </div>
+        </template>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted">Jaringan</span>
+            <UBadge color="primary" variant="subtle">
+              {{ networkLabel }}
+            </UBadge>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted">Status Koneksi</span>
+            <UBadge
+              :color="
+                blockchainStats.networkStatus === 'connected'
+                  ? 'success'
+                  : 'error'
+              "
+              variant="subtle"
+              class="gap-1"
+            >
+              <UIcon
+                :name="
+                  blockchainStats.networkStatus === 'connected'
+                    ? 'i-tabler-plug-connected'
+                    : 'i-tabler-plug-connected-x'
+                "
+                class="size-3.5"
+              />
+              {{
+                blockchainStats.networkStatus === "connected"
+                  ? "Terhubung"
+                  : "Terputus"
+              }}
+            </UBadge>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted">Sertifikat Terverifikasi</span>
+            <span class="text-sm font-semibold text-highlighted">
+              {{ blockchainStats.totalVerified }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted">Tercatat On-Chain</span>
+            <span class="text-sm font-semibold text-highlighted">
+              {{ blockchainStats.totalOnChain }}
+            </span>
+          </div>
+
+          <div class="flex flex-col gap-1 pt-2 border-t border-default">
+            <span class="text-xs text-muted">Blok Terakhir</span>
+            <div class="flex items-center gap-1.5">
+              <UIcon
+                name="i-tabler-link"
+                class="size-3.5 text-muted shrink-0"
+              />
+              <span class="text-xs font-mono truncate text-highlighted">
+                #{{ blockchainStats.lastBlockNumber || "-" }}
+              </span>
+            </div>
+            <span
+              class="text-xs font-mono truncate text-muted"
+              :title="blockchainStats.lastBlockHash"
+            >
+              {{ blockchainStats.lastBlockHash || "-" }}
+            </span>
+          </div>
+
+          <UButton
+            icon="i-tabler-external-link"
+            label="Lihat di Polygonscan"
+            variant="ghost"
+            size="sm"
+            block
+            :to="polygonscanUrl"
+            target="_blank"
+          />
+        </div>
+      </UCard>
+
+      <!-- Distribusi Status Permohonan -->
+      <UCard class="lg:col-span-2">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon name="i-tabler-chart-bar" class="size-5 text-primary" />
+            <span class="font-semibold text-highlighted">
+              Distribusi Status Permohonan
+            </span>
+          </div>
+        </template>
+
+        <div class="flex flex-col gap-3">
+          <div
+            v-for="item in visibleDistribution"
+            :key="item.status"
+            class="flex items-center gap-3"
+          >
+            <span class="text-xs w-40 shrink-0 truncate text-muted">
+              {{ statusLabel[item.status] ?? item.status }}
+            </span>
+            <div class="flex-1 h-2.5 rounded-full bg-elevated overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all"
+                :class="`bg-${statusColor[item.status] ?? 'neutral'}-500`"
+                :style="{ width: `${(item.count / getMaxCount()) * 100}%` }"
+              />
+            </div>
+            <span class="text-xs w-8 text-right font-medium text-highlighted">
+              {{ item.count }}
+            </span>
+          </div>
+
+          <div
+            v-if="!isLoading && !visibleDistribution.length"
+            class="text-sm text-muted text-center py-6"
+          >
+            Belum ada data permohonan
+          </div>
+        </div>
+      </UCard>
     </div>
-
-  </div>
-</template>
-
-<style scoped>
-.controls-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: #f3f4f6;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 4px;
-}
-
-.page-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.cert-header {
-  padding: 4px 0;
-}
-
-.cert-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-  margin: 0 0 4px;
-}
-
-.pdf-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.nav-btn {
-  padding: 8px 16px;
-  background-color: #065f46;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.2s;
-}
-
-.nav-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.nav-btn:not(:disabled):active {
-  opacity: 0.8;
-}
-
-.page-info {
-  font-size: 13px;
-  color: #374151;
-  font-weight: 500;
-}
-
-/* Anchor utama untuk QR overlay */
-.pdf-section-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-/* pdf-card: shadow & rounded, tanpa overflow hidden */
-.pdf-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  background: white;
-  overflow-x: auto;
-  overflow-y: visible;
-}
-
-/* pdf-wrapper: hanya container PDF */
-.pdf-wrapper {
-  width: 100%;
-  background: white;
-  line-height: 0;
-}
-
-.pdf-wrapper :deep(canvas) {
-  display: block;
-  max-width: none;
-}
-
-.pdf-loading {
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.qr-overlay {
-  position: absolute;
-  bottom: 15%;
-  right: 10%;
-  z-index: 20;
-  pointer-events: none;
-}
-
-.qr-box {
-  pointer-events: auto;
-  padding: 6px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  line-height: normal;
-}
-
-.qr-box :deep(canvas) {
-  display: block;
-  width: auto !important;
-  height: auto !important;
-  max-width: none !important;
-}
-
-.qr-label {
-  font-size: 7px;
-  font-weight: 800;
-  color: #065f46;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-</style>

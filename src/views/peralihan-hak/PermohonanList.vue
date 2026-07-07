@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { h, ref, watch, resolveComponent, onMounted } from "vue";
 import type { TableColumn } from "@nuxt/ui";
+import {
+  docTypeToLabel,
+  statusColor,
+  statusLabel,
+  type ApplicationDetailResponse,
+} from "@/types";
 import { getPaginationRowModel, type Row } from "@tanstack/table-core";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import { useAuthStore } from "@/stores/auth.store";
@@ -9,6 +15,8 @@ import { useRouter } from "vue-router";
 
 const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
+const UPopover = resolveComponent("UPopover");
+const UIcon = resolveComponent("UIcon");
 
 const router = useRouter();
 const toast = useToast();
@@ -36,39 +44,6 @@ const pagination = ref({
   pageSize: 10,
 });
 
-// Status badge color mapping
-const statusColorMap: Record<string, any> = {
-  VERIFIKASI_BERKAS: "warning",
-  MENUNGGU_PEMBAYARAN: "warning",
-  VERIFIKASI_PEMBAYARAN: "info",
-  PROSES_PENERBITAN: "primary",
-
-  PEMBAYARAN_DIBATALKAN: "error",
-  PEMBAYARAN_KADALUARSA: "error",
-  PEMBAYARAN_DIKEMBALIKAN: "warning",
-
-  DITOLAK: "error",
-  TERJADI_KESALAHAN: "error",
-
-  SELESAI: "success",
-};
-
-const statusLabelMap: Record<string, string> = {
-  VERIFIKASI_BERKAS: "Verifikasi Berkas",
-  MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
-  VERIFIKASI_PEMBAYARAN: "Verifikasi Pembayaran",
-  PROSES_PENERBITAN: "Dalam Proses Penerbitan",
-
-  PEMBAYARAN_DIBATALKAN: "Pembayaran Dibatalkan",
-  PEMBAYARAN_KADALUARSA: "Pembayaran Kedaluwarsa",
-  PEMBAYARAN_DIKEMBALIKAN: "Pembayaran Dikembalikan",
-
-  DITOLAK: "Ditolak",
-  TERJADI_KESALAHAN: "Terjadi Kesalahan",
-
-  SELESAI: "Selesai",
-};
-
 const columns: TableColumn<any>[] = [
   {
     accessorKey: "file_number",
@@ -95,17 +70,115 @@ const columns: TableColumn<any>[] = [
   },
   {
     accessorKey: "land",
-    header: "Lokasi Tanah",
+    header: () => h("div", { class: "text-center" }, "Lokasi Tanah"),
     cell: ({ row }) => {
       const land = row.original.land;
-      if (!land) return h("span", {}, "-");
+      if (!land) return h("div", { class: "flex justify-center" }, "-");
+
       const address = `${land.street_address}, RT ${land.rt}/RW ${land.rw}, ${land.village?.name}, ${land.district?.name}`;
-      return h("div", { class: "flex flex-col gap-0.5" }, [
-        h("span", { class: "text-sm" }, address),
+      const regionAddress = `${land.regency?.name}, ${land.province?.name}`;
+      const fullAddress = `${address}, ${regionAddress}`;
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+
+      return h("div", { class: "flex justify-center" }, [
         h(
-          "span",
-          { class: "text-xs text-muted" },
-          `${land.regency?.name}, ${land.province?.name}`,
+          UPopover,
+          {},
+          {
+            default: () =>
+              h(UBadge, {
+                icon: "i-tabler-map-pin",
+                color: "primary",
+                size: "lg",
+                class: "cursor-pointer",
+              }),
+            content: () =>
+              h("div", { class: "p-4 w-80 flex flex-col gap-3" }, [
+                h(
+                  "div",
+                  {
+                    class:
+                      "flex items-center gap-2 pb-2 border-b border-default",
+                  },
+                  [
+                    h(UIcon, {
+                      name: "i-tabler-map-pin-filled",
+                      class: "size-5 text-primary",
+                    }),
+                    h(
+                      "span",
+                      { class: "font-semibold text-highlighted" },
+                      "Detail Lokasi Tanah",
+                    ),
+                  ],
+                ),
+
+                h("div", { class: "flex flex-col gap-2 text-sm" }, [
+                  h("div", { class: "flex justify-between gap-2" }, [
+                    h("span", { class: "text-muted" }, "Alamat"),
+                    h(
+                      "span",
+                      { class: "font-medium text-right" },
+                      land.street_address ?? "-",
+                    ),
+                  ]),
+                  h("div", { class: "flex justify-between gap-2" }, [
+                    h("span", { class: "text-muted" }, "RT/RW"),
+                    h(
+                      "span",
+                      { class: "font-medium" },
+                      `${land.rt ?? "-"}/${land.rw ?? "-"}`,
+                    ),
+                  ]),
+                  h("div", { class: "flex justify-between gap-2" }, [
+                    h("span", { class: "text-muted" }, "Desa/Kelurahan"),
+                    h(
+                      "span",
+                      { class: "font-medium" },
+                      land.village?.name ?? "-",
+                    ),
+                  ]),
+                  h("div", { class: "flex justify-between gap-2" }, [
+                    h("span", { class: "text-muted" }, "Kecamatan"),
+                    h(
+                      "span",
+                      { class: "font-medium" },
+                      land.district?.name ?? "-",
+                    ),
+                  ]),
+                  h("div", { class: "flex justify-between gap-2" }, [
+                    h("span", { class: "text-muted" }, "Kabupaten/Kota"),
+                    h(
+                      "span",
+                      { class: "font-medium" },
+                      land.regency?.name ?? "-",
+                    ),
+                  ]),
+                  h("div", { class: "flex justify-between gap-2" }, [
+                    h("span", { class: "text-muted" }, "Provinsi"),
+                    h(
+                      "span",
+                      { class: "font-medium" },
+                      land.province?.name ?? "-",
+                    ),
+                  ]),
+                ]),
+
+                h(
+                  UButton,
+                  {
+                    icon: "i-tabler-external-link",
+                    color: "primary",
+                    variant: "soft",
+                    block: true,
+                    class: "mt-2",
+                    to: mapsUrl,
+                    target: "_blank",
+                  },
+                  () => "Buka di Google Maps",
+                ),
+              ]),
+          },
         ),
       ]);
     },
@@ -131,8 +204,8 @@ const columns: TableColumn<any>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status: string = row.original.status;
-      const color = statusColorMap[status] ?? "neutral";
-      const label = statusLabelMap[status] ?? status;
+      const color = statusColor[status] ?? "neutral";
+      const label = statusLabel[status] ?? status;
       return h(
         UBadge,
         { class: "capitalize whitespace-nowrap", variant: "subtle", color },
@@ -183,6 +256,7 @@ const getApplicationList = async () => {
     let dateParam = "";
     if (selectedDate.value) {
       dateParam = selectedDate.value;
+      console.log(selectedDate.value);
     }
 
     const params = new URLSearchParams({
@@ -302,11 +376,22 @@ onMounted(async () => {
         v-model="statusFilter"
         :items="[
           { label: 'Semua Status', value: 'all' },
-          { label: 'Diproses', value: 'DIPROSES' },
+
           { label: 'Verifikasi Berkas', value: 'VERIFIKASI_BERKAS' },
           { label: 'Menunggu Pembayaran', value: 'MENUNGGU_PEMBAYARAN' },
-          { label: 'Penandatanganan', value: 'PENANDATANGANAN' },
+          { label: 'Verifikasi Pembayaran', value: 'VERIFIKASI_PEMBAYARAN' },
+          { label: 'Proses Penerbitan', value: 'PROSES_PENERBITAN' },
+
+          { label: 'Pembayaran Dibatalkan', value: 'PEMBAYARAN_DIBATALKAN' },
+          { label: 'Pembayaran Kadaluarsa', value: 'PEMBAYARAN_KADALUARSA' },
+          {
+            label: 'Pembayaran Dikembalikan',
+            value: 'PEMBAYARAN_DIKEMBALIKAN',
+          },
+
           { label: 'Ditolak', value: 'DITOLAK' },
+          { label: 'Terjadi Kesalahan', value: 'TERJADI_KESALAHAN' },
+
           { label: 'Selesai', value: 'SELESAI' },
         ]"
         :ui="{
@@ -314,7 +399,7 @@ onMounted(async () => {
             'group-data-[state=open]:rotate-180 transition-transform duration-200',
         }"
         placeholder="Filter status"
-        class="min-w-44"
+        class="min-w-60"
       />
 
       <!-- Tambah Permohonan -->

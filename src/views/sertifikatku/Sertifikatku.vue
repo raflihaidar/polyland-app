@@ -318,7 +318,7 @@ onUnmounted(() => {
             />
             <p class="flex items-center text-slate-500">
               <UIcon name="tabler:ruler-3" class="size-6 mr-2" />
-              {{ item.area_size }}
+              {{ item.area_size }} m²
             </p>
           </div>
         </RouterLink>

@@ -27,6 +27,7 @@ const pdfContainer = ref<HTMLElement | null>(null);
 const baseWidth = ref(0);
 const modalLabel = ref(false);
 const tempLabel = ref("");
+const isImportingNFT = ref(false);
 const toast = useToast();
 
 if (typeof window !== "undefined" && !(window as any).Buffer) {
@@ -51,8 +52,8 @@ const openModal = () => {
   if (certificate.value && certificate.value.label) {
     tempLabel.value = certificate.value.label;
     modalLabel.value = true;
-  }else{
-    modalLabel.value = true
+  } else {
+    modalLabel.value = true;
   }
 };
 
@@ -83,6 +84,79 @@ const updateLabel = async () => {
 const closeModal = () => {
   tempLabel.value = "";
   modalLabel.value = false;
+};
+
+const importNFTToMetamask = async () => {
+  if (typeof window === "undefined" || typeof window.ethereum === "undefined") {
+    toast.add({
+      title: "MetaMask tidak ditemukan",
+      description: "Silakan install ekstensi MetaMask terlebih dahulu",
+      color: "error",
+    });
+    return;
+  }
+
+  if (!certificate.value) return;
+
+  try {
+    isImportingNFT.value = true;
+
+    // Ambil token_id dari endpoint certificate
+    const res = await api.get(`/certificate/${certificate.value.id}`);
+
+    console.log("res : ", res.data);
+
+    const tokenId = res?.data?.data?.token_id;
+
+    if (!tokenId) {
+      throw new Error("Token ID tidak ditemukan untuk sertifikat ini");
+    }
+
+    const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+
+    if (!contractAddress) {
+      throw new Error("Contract address tidak ditemukan pada konfigurasi env");
+    }
+
+    const wasAdded = await window.ethereum.request({
+      method: "wallet_watchAsset",
+      params: {
+        type: "ERC721",
+        options: {
+          address: contractAddress,
+          symbol: "TNH",
+          tokenId: String(tokenId),
+          decimals: 0,
+        },
+      },
+    });
+
+    if (wasAdded) {
+      toast.add({
+        title: "Berhasil",
+        description: "NFT berhasil ditambahkan ke MetaMask",
+        color: "success",
+      });
+    } else {
+      toast.add({
+        title: "Dibatalkan",
+        description: "Anda menolak proses import NFT",
+        color: "warning",
+      });
+    }
+  } catch (error: any) {
+    console.error("Import NFT gagal:", error);
+    toast.add({
+      title: "Gagal menambahkan NFT",
+      description:
+        error?.response?.data?.message ||
+        error?.message ||
+        "Terjadi kesalahan saat menambahkan NFT ke MetaMask",
+      color: "error",
+    });
+  } finally {
+    isImportingNFT.value = false;
+  }
 };
 
 const handleViewCertificate = async () => {
@@ -223,6 +297,7 @@ onMounted(async () => {
           </div>
         </section>
       </div>
+
       <div class="bg-white rounded-xl p-5 shadow-border mb-5">
         <section class="text-center mb-5">
           <h3 class="font-semibold">Otentikasi Kepemilikan</h3>
@@ -247,6 +322,26 @@ onMounted(async () => {
             {{ isDecrypting ? "Memproses..." : "Tanda tangani digital" }}
           </UButton>
         </section>
+      </div>
+
+      <!-- Import NFT ke MetaMask -->
+      <div class="bg-white rounded-xl p-5 shadow-border mb-5">
+        <section class="text-center mb-5">
+          <h3 class="font-semibold">Sertifikat NFT</h3>
+          <p class="text-sm mt-2">
+            Tambahkan sertifikat ini sebagai NFT ke wallet MetaMask Anda
+          </p>
+        </section>
+        <UButton
+          icon="token-branded:metamask"
+          color="neutral"
+          variant="outline"
+          @click="importNFTToMetamask"
+          :loading="isImportingNFT"
+          block
+        >
+          {{ isImportingNFT ? "Menambahkan..." : "Tambahkan ke MetaMask" }}
+        </UButton>
       </div>
 
       <div class="flex justify-between w-full items-center gap-x-5">
