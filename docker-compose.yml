@@ -1,0 +1,13 @@
+services:
+  jejaktanahku-app:
+    build: .
+    container_name: jejaktanahku-app
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - jejaktanahku-network
+
+networks:
+  jejaktanahku-network:
+    external: true
