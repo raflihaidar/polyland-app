@@ -7,7 +7,9 @@ import { useRoute, useRouter } from "vue-router";
 import type { ApplicationDetailResponse } from "@/types";
 import { useConfirmDialog } from "@/composables/useConfirmModal";
 import FormView from "./components/FormView.vue";
-import FormEdit, { type OwnershipTransferFormModel } from "./components/FormEdit.vue";
+import FormEdit, {
+  type OwnershipTransferFormModel,
+} from "./components/FormEdit.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -25,14 +27,8 @@ const form = reactive<OwnershipTransferFormModel>({
   certificate: null,
   land_office_id: authStore.user?.land_office_id!,
   owners: [],
-  files: {
-    cert_file: null,
-    akta_jual_beli: null,
-    fc_sppt: null,
-    fc_pbb: null,
-    ssb: null,
-    ktp_penjual: null,
-  },
+  sellers: [],
+  files: {},
 });
 
 const isViewMode = computed(
@@ -96,20 +92,43 @@ const populateFormFromDetail = () => {
       nik: ownerEntry.person?.nik ?? "",
       phone: ownerEntry.person?.phone ?? "",
       email: ownerEntry.person?.email ?? "",
+      marital_status: ownerEntry.person?.document.some(
+        (doc: any) => doc.type === "SURAT_NIKAH",
+      )
+        ? "menikah"
+        : "belum_menikah",
       ktp_pembeli: null,
       kk_pembeli: null,
     },
     share: String(Math.round(Number(ownerEntry.share) * 100)),
   }));
 
-  // Reset files (user harus upload ulang jika ingin mengganti)
+  form.sellers = (d.sellers ?? []).map((sellerEntry: any) => ({
+    isSearching: false,
+    mode: "search" as const,
+    result: [],
+    query: sellerEntry.person?.name ?? "",
+    person: {
+      id: sellerEntry.person?.id ?? "",
+      name: sellerEntry.person?.name ?? "",
+      nik: sellerEntry.person?.nik ?? "",
+      phone: sellerEntry.person?.phone ?? "",
+      email: sellerEntry.person?.email ?? "",
+      marital_status: sellerEntry.person?.document.some(
+        (doc: any) => doc.type === "SURAT_NIKAH",
+      )
+        ? "menikah"
+        : "belum_menikah",
+      ktp_pembeli: null,
+      kk_pembeli: null,
+    },
+  }));
+
   form.files = {
-    cert_file: null,
     akta_jual_beli: null,
-    fc_sppt: null,
-    fc_pbb: null,
-    ssb: null,
-    ktp_penjual: null,
+    sptt_pbb: null,
+    bphtb: null,
+    pph: null,
   };
 };
 
@@ -230,21 +249,150 @@ const handleUpdateStatus = async (status: any) => {
   }
 };
 
+// ─── EIP-712 Typed Data untuk ForwardRequest ───────────────────────
+interface ForwardRequestTypedData {
+  domain: {
+    name: string;
+    version: string;
+    chainId: number;
+    verifyingContract: string;
+  };
+  types: {
+    ForwardRequest: { name: string; type: string }[];
+  };
+  primaryType: "ForwardRequest";
+  message: {
+    from: string;
+    to: string;
+    value: string;
+    gas: string;
+    nonce: string;
+    deadline: number;
+    data: string;
+  };
+}
+
+interface SignedForwardRequest {
+  from: string;
+  to: string;
+  value: string;
+  gas: string;
+  deadline: number;
+  data: string;
+  signature: string;
+}
+
+const getEthereumProvider = () => {
+  const provider = (window as any).ethereum;
+
+  if (!provider) {
+    throw new Error(
+      "MetaMask tidak terdeteksi. Pastikan extension sudah terpasang.",
+    );
+  }
+
+  return provider;
+};
+
+// Connect wallet & minta permission
+const connectWallet = async (): Promise<string> => {
+  const provider = getEthereumProvider();
+
+  await provider.request({
+    method: "wallet_requestPermissions",
+    params: [{ eth_accounts: {} }],
+  });
+
+  const accounts: string[] = await provider.request({
+    method: "eth_requestAccounts",
+  });
+
+  const address = accounts?.[0];
+
+  if (!address) {
+    throw new Error("Tidak ada akun MetaMask yang terhubung.");
+  }
+
+  return address;
+};
+
+const signMintRequest = async (
+  petugasAddress: string,
+): Promise<SignedForwardRequest> => {
+  const recipientAddress =
+    detailData.value?.owners?.[0]?.person?.wallet_address;
+
+  if (!recipientAddress) {
+    throw new Error(
+      "Alamat wallet penerima sertifikat belum terdaftar. Pastikan pemilik sudah registrasi wallet.",
+    );
+  }
+
+  const { data } = await api.post<{
+    success: boolean;
+    data: ForwardRequestTypedData;
+  }>("/ownership-transfer/request-mint-signature", {
+    petugasAddress,
+    recipientAddress,
+  });
+
+  const typedData = data.data;
+
+  // eth_signTypedData_v4 butuh EIP712Domain type eksplisit di payload
+  const payload = {
+    domain: typedData.domain,
+    types: {
+      EIP712Domain: [
+        { name: "name", type: "string" },
+        { name: "version", type: "string" },
+        { name: "chainId", type: "uint256" },
+        { name: "verifyingContract", type: "address" },
+      ],
+      ...typedData.types,
+    },
+    primaryType: typedData.primaryType,
+    message: typedData.message,
+  };
+
+  const provider = getEthereumProvider();
+
+  const signature: string = await provider.request({
+    method: "eth_signTypedData_v4",
+    params: [petugasAddress, JSON.stringify(payload)],
+  });
+
+  // signedRequest yang dikirim ke backend TIDAK mengandung `nonce`
+  // (forwarder ambil nonce current on-chain sendiri saat verifikasi)
+  return {
+    from: typedData.message.from,
+    to: typedData.message.to,
+    value: typedData.message.value,
+    gas: typedData.message.gas,
+    deadline: typedData.message.deadline,
+    data: typedData.message.data,
+    signature,
+  };
+};
+
+// ─── Handler tombol "Terbitkan Sertifikat" ─────────────────────────
 const handleGenerateCertificate = async () => {
   try {
     const isConfirmed = await confirm({
       title: "Penerbitan Sertifikat",
       description:
-        "Apakah Anda yakin ingin memulai proses penerbitan sertifikat untuk permohonan ini?",
+        "Apakah Anda yakin ingin memulai proses penerbitan sertifikat untuk permohonan ini? Anda akan diminta menandatangani transaksi via MetaMask.",
     });
 
     if (!isConfirmed) return;
 
     isLoading.value = true;
 
+    const petugasAddress = await connectWallet();
+    const signedRequest = await signMintRequest(petugasAddress);
+
     const { data } = await api.post(
       `/ownership-transfer/enqueue-certificate/${detailData.value.id}`,
-      { notes: [...notes.value] },
+      { notes: [...notes.value], signedRequest },
     );
 
     if (data.status === "success") {
@@ -257,10 +405,19 @@ const handleGenerateCertificate = async () => {
 
       await getApplicationDetail();
     }
-  } catch (error) {
+  } catch (error: any) {
+    const isUserRejected =
+      error?.code === 4001 || error?.message?.includes("User rejected");
+
     toast.add({
-      title: "Terjadi Kesalahan",
-      description: "Gagal memproses penerbitan sertifikat. Silakan coba lagi.",
+      title: isUserRejected
+        ? "Penandatanganan Dibatalkan"
+        : "Terjadi Kesalahan",
+      description: isUserRejected
+        ? "Anda membatalkan proses tanda tangan di MetaMask."
+        : (error?.response?.data?.message ??
+          error?.message ??
+          "Gagal memproses penerbitan sertifikat. Silakan coba lagi."),
       color: "error",
     });
   } finally {

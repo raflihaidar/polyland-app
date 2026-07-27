@@ -18,6 +18,9 @@ const isLoading = ref<boolean>(false);
 const accountList = ref<any[]>([]);
 const statusFilter = ref("all");
 const searchQuery = ref<string>("");
+const openModalRejection = ref(false);
+const selectedRejectionData = ref<string | null>(null);
+const rejectionNotes = ref("");
 
 const pagination = ref({
   total: 0,
@@ -64,7 +67,6 @@ const handleApproved = useDebounceFn(async (id: string) => {
       }
     }
   } catch (error: any) {
-    console.log(error.response?.data?.message);
     toast.add({
       title: "Gagal",
       description: error.response?.data?.message ?? "Gagal menyetujui akun.",
@@ -74,7 +76,7 @@ const handleApproved = useDebounceFn(async (id: string) => {
   }
 }, 300);
 
-const handleReject = useDebounceFn(async (id: string) => {
+const handleReject = useDebounceFn(async () => {
   try {
     isLoading.value = true;
 
@@ -85,9 +87,10 @@ const handleReject = useDebounceFn(async (id: string) => {
 
     if (isConfirmed) {
       const { data } = await useApiPrivate().post(
-        `/verification-account/verify/${id}`,
+        `/verification-account/verify/${selectedRejectionData.value}`,
         {
           status: "REJECTED",
+          rejectionReason: rejectionNotes.value,
         },
       );
 
@@ -107,9 +110,15 @@ const handleReject = useDebounceFn(async (id: string) => {
       description: error.response.data ?? "Gagal menolak akun.",
     });
   } finally {
+    openModalRejection.value = false;
     isLoading.value = false;
   }
 }, 300);
+
+const selectRejectionData = (id: string) => {
+  openModalRejection.value = true;
+  selectedRejectionData.value = id;
+};
 
 const columns: TableColumn<any>[] = [
   {
@@ -183,7 +192,7 @@ const columns: TableColumn<any>[] = [
             icon: "radix-icons:cross-2",
             color: "error",
             class: "cursor-pointer",
-            onClick: () => handleReject(row.original.id),
+            onClick: () => selectRejectionData(row.original.id),
           }),
         ]);
       }
@@ -244,6 +253,13 @@ watch(() => [pagination.value.page, pagination.value.limit], getListAccount, {
   immediate: true,
 });
 
+watch(
+  () => openModalRejection.value,
+  (val) => {
+    if (!val) rejectionNotes.value = "";
+  },
+);
+
 onMounted(() => {
   getListAccount();
 });
@@ -301,4 +317,25 @@ onMounted(() => {
     />
     <BasePagination v-model="pagination" @goToPage="goToPage" />
   </div>
+  <UModal v-model:open="openModalRejection" title="Alasan Penolakan">
+    <template #body>
+      <UTextarea
+        v-model="rejectionNotes"
+        class="w-full"
+        size="xl"
+        placeholder="Berikan alasan penolakan"
+        autoresize
+      />
+    </template>
+    <template #footer>
+      <div class="flex justify-end w-full gap-x-3">
+        <UButton
+          label="Batalkan"
+          variant="outline"
+          @click="openModalRejection = false"
+        />
+        <UButton label="Tolak" @click="handleReject" />
+      </div>
+    </template>
+  </UModal>
 </template>

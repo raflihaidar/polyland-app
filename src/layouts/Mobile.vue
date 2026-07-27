@@ -1,25 +1,23 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import Header from "../components/shared/HeaderMobile.vue";
 import { useRoute } from "vue-router";
 import ButtomNavbar from "@/components/shared/ButtomNavbar.vue";
-import { useAccountStore } from "@/stores/account.store";
 
 const route = useRoute();
-const accountStore = useAccountStore();
 
 const isButtomNavbarVisible = computed(() =>
   ["public.home", "profil"].includes(route.name as string),
 );
 
 const isAuthPage = computed(() => {
-  return ["login", "register", "public.verify-certificate", 'hasil pembayaran'].includes(
-    route.name as string,
-  );
-});
-
-onMounted(async () => {
-  await accountStore.checkAccount();
+  return [
+    "login",
+    "register",
+    "public.verify-certificate",
+    "hasil pembayaran",
+    "konfirmasi-verifikasi-akun",
+  ].includes(route.name as string);
 });
 </script>
 

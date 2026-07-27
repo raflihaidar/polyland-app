@@ -1,23 +1,19 @@
 <script setup lang="ts">
-import type { FormSubmitEvent } from "@nuxt/ui";
-import { inject, useTemplateRef, shallowRef, computed } from "vue";
-import { useAccountStore } from "../../../stores/account.store";
+import { inject, useTemplateRef, computed, onMounted, ref } from "vue";
 import { Gender } from "../../../types";
-import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import type { VerifikasiSchema } from "../VerifikasiAkun.vue";
 import type { Ref, ShallowRef } from "vue";
 import type { CalendarDate } from "@internationalized/date";
 import type { ZodTypeAny } from "zod";
+import { useApiPrivate } from "@/composables/useApi";
 
-const toast = useToast();
 const router = useRouter();
-const store = useAccountStore();
+const route = useRoute();
+const loading = ref(false);
 
 const isValid = computed(() => {
   const data = form.value;
-
-  console.log("form : ", form.value);
 
   return (
     !!data.fullName?.trim() &&
@@ -49,6 +45,7 @@ const submit = () => {
       variant="solid"
       class="mb-4"
     />
+
     <UForm :schema="schema" :state="form" class="space-y-4">
       <UFormField name="fullName" label="Nama Lengkap">
         <UInput

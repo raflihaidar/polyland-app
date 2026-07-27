@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { useApiPrivate } from "@/composables/useApi";
+import {
+  contractConfig,
+  walletClient,
+  publicClient,
+  getAccount,
+} from "@/lib/walletClient";
+import { BaseError, ContractFunctionRevertedError, parseGwei } from "viem";
 import { useReferenceStore } from "@/stores/reference.store";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import { useDebounceFn } from "@vueuse/core";
 import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import type { Address } from "viem";
 
 const toast = useToast();
 const route = useRoute();
@@ -30,6 +38,10 @@ const form = ref({
   landOffice: null as any,
 });
 
+const hasBpnRole = ref(false);
+const settingBpnRole = ref(false);
+const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
+
 const genderOptions = [
   { label: "Laki-laki", value: "LAKI_LAKI" },
   { label: "Perempuan", value: "PEREMPUAN" },
@@ -54,6 +66,22 @@ const isOfficer = computed<boolean>(() => {
   return currData || formData;
 });
 
+const isKantahAdmin = computed<boolean>(() => {
+  const matchByName = (name: string) => name?.toLowerCase().includes("kantah");
+
+  const currData =
+    detailData.value?.roles?.some((r: any) => matchByName(r.role.name)) ??
+    false;
+  const formData = form.value.roles.some((r) => matchByName(r.name));
+
+  return currData || formData;
+});
+
+const showWalletSection = computed(() => {
+  if (editMode.value) return isKantahAdmin.value;
+  return isKantahAdmin.value;
+});
+
 const getUserDetail = async () => {
   try {
     loading.value = true;
@@ -61,6 +89,7 @@ const getUserDetail = async () => {
       `/person/detail/${route.params?.id}`,
     );
     detailData.value = data.data;
+    await isCheckBPNRole(detailData.value.wallet_address);
   } catch (error: any) {
     toast.add({
       title: "Gagal memuat data",
@@ -102,6 +131,7 @@ const getAllLandOffice = useDebounceFn(async () => {
 const handleCancelEdit = () => {
   editMode.value = false;
 };
+
 const handleSave = async () => {
   try {
     saving.value = true;
@@ -138,6 +168,130 @@ const handleSave = async () => {
     });
   } finally {
     saving.value = false;
+  }
+};
+
+const isCheckBPNRole = async (address: Address): Promise<boolean> => {
+  try {
+    const BPN_ROLE = (await publicClient.readContract({
+      ...contractConfig,
+      functionName: "BPN_ROLE",
+    })) as `0x${string}`;
+
+    const result = (await publicClient.readContract({
+      ...contractConfig,
+      functionName: "hasRole",
+      args: [BPN_ROLE, address],
+    })) as boolean;
+
+    hasBpnRole.value = result;
+
+    return hasBpnRole.value;
+  } catch (error) {
+    console.error("Gagal cek BPN Role:", error);
+    return false;
+  }
+};
+
+const handleSetBpnRole = async () => {
+  const address = detailData.value.wallet_address as string;
+
+  if (!address) {
+    toast.add({
+      title: "Wallet address kosong",
+      description: "Masukkan wallet address terlebih dahulu",
+      color: "error",
+    });
+    return;
+  }
+
+  if (!ETH_ADDRESS_REGEX.test(address)) {
+    toast.add({
+      title: "Format tidak valid",
+      description: "Wallet address harus format 0x... (42 karakter hex)",
+      color: "error",
+    });
+    return;
+  }
+
+  try {
+    settingBpnRole.value = true;
+
+    const officerAddress = address as Address;
+
+    // 1. Cek dulu on-chain, biar tidak buang gas kalau ternyata sudah punya role
+    const BPN_ROLE = (await publicClient.readContract({
+      ...contractConfig,
+      functionName: "BPN_ROLE",
+    })) as `0x${string}`;
+
+    const alreadyHasRole = (await publicClient.readContract({
+      ...contractConfig,
+      functionName: "hasRole",
+      args: [BPN_ROLE, officerAddress],
+    })) as boolean;
+
+    if (alreadyHasRole) {
+      toast.add({
+        title: "Sudah terdaftar",
+        description: "Wallet ini sudah memiliki BPN_ROLE di smart contract",
+        color: "warning",
+      });
+      return;
+    }
+
+    // 2. Simulate dulu untuk validasi & dapat error message yang jelas sebelum kirim tx
+    const client = walletClient();
+    const account = await getAccount();
+
+    // const feeData = await publicClient.estimateFeesPerGas();
+    const { request } = await publicClient.simulateContract({
+      ...contractConfig,
+      functionName: "addOfficer",
+      args: [officerAddress],
+      account,
+    });
+
+    // 3. Kirim transaksi -> trigger MetaMask popup untuk sign
+    const hash = await client.writeContract(request);
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+    if (receipt.status !== "success") {
+      throw new Error("Transaksi gagal/reverted di blockchain");
+    }
+
+    toast.add({
+      title: "Berhasil",
+      description: `BPN Role berhasil diberikan on-chain. Tx: ${hash.slice(0, 10)}...`,
+      color: "success",
+    });
+
+    await getUserDetail();
+  } catch (error: any) {
+    let description = "Terjadi kesalahan saat memanggil smart contract";
+
+    if (error instanceof BaseError) {
+      const revertError = error.walk(
+        (e) => e instanceof ContractFunctionRevertedError,
+      );
+      if (revertError instanceof ContractFunctionRevertedError) {
+        description =
+          revertError.reason ?? revertError.shortMessage ?? description;
+      } else {
+        description = error.shortMessage ?? description;
+      }
+    } else {
+      description =
+        error?.response?.data?.message ?? error?.message ?? description;
+    }
+
+    toast.add({
+      title: "Gagal set BPN Role",
+      description,
+      color: "error",
+    });
+  } finally {
+    settingBpnRole.value = false;
   }
 };
 
@@ -410,6 +564,60 @@ onMounted(() => {
               <span v-else class="text-sm text-gray-400">Tidak ada role</span>
             </div>
           </UFormField>
+        </UCard>
+
+        <UCard v-if="showWalletSection">
+          <template #header>
+            <p class="font-semibold text-lg flex items-center gap-2">
+              <UIcon name="i-lucide-wallet" class="size-5 text-primary" />
+              Alamat Wallet
+            </p>
+          </template>
+
+          <div class="space-y-4">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              User dengan role Admin Kantah perlu memiliki wallet address yang
+              terdaftar sebagai BPN pada smart contract untuk dapat
+              menerbitkan/mengelola sertifikat.
+            </p>
+
+            <UFormField label="Wallet Address" name="walletAddress">
+              <div class="flex items-center gap-2">
+                <UInput
+                  v-model="detailData.wallet_address"
+                  class="w-full font-mono"
+                  disabled
+                />
+                <UButton
+                  v-if="!hasBpnRole && editMode"
+                  label="Set sebagai BPN"
+                  icon="i-lucide-shield-plus"
+                  color="primary"
+                  :loading="settingBpnRole"
+                  @click="handleSetBpnRole"
+                />
+              </div>
+            </UFormField>
+
+            <div v-if="hasBpnRole" class="flex items-center gap-2 text-sm">
+              <UIcon
+                name="i-tabler-circle-check-filled"
+                class="size-5 text-success shrink-0"
+              />
+              <span class="text-gray-600 dark:text-gray-400">
+                Wallet terdaftar sebagai BPN
+              </span>
+            </div>
+            <div v-else class="flex items-center gap-2 text-sm">
+              <UIcon
+                name="i-ri-close-circle-fill"
+                class="size-5 text-danger shrink-0"
+              />
+              <span class="text-gray-500 dark:text-gray-400">
+                Wallet belum terdaftar sebagai BPN
+              </span>
+            </div>
+          </div>
         </UCard>
 
         <!-- Land Office Card -->

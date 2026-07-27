@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { useAuthStore } from "../../stores/auth.store";
-// import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import { MetaMaskSDK } from "@metamask/sdk";
@@ -9,7 +8,6 @@ import * as z from "zod";
 
 const error = ref<string | null>(null);
 const store = useAuthStore();
-// const { isAuthenticated, isMetaMaskSupported } = storeToRefs(store);
 const router = useRouter();
 
 const form = ref<Partial<Schema>>({
@@ -23,13 +21,15 @@ const alert = ref<{ show: boolean; message: string }>({
 });
 const show = ref<boolean>(false);
 const schema = z.object({
-  email: z.email("Email tidak valid").trim(),
-  password: z.string().trim(),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email tidak boleh kosong")
+    .email("Email tidak valid"),
+  password: z.string().trim().min(1, "Password tidak boleh kosong"),
 });
 type Schema = z.output<typeof schema>;
-const openModal = ref<boolean>(false);
 
-// Deklarasikan mmsdk sebagai let agar aman dari SSR Nuxt
 let mmsdk: MetaMaskSDK | null = null;
 
 const getProvider = async () => {
@@ -55,25 +55,17 @@ const getProvider = async () => {
   throw new Error("MetaMask Provider tidak ditemukan");
 };
 
-// Handler ketika user mengganti akun langsung di ekstensi MetaMask
 const handleAccountsChanged = async (accounts: unknown) => {
   const accountArray = accounts as string[];
   if (accountArray.length === 0) {
-    console.log("MetaMask terputus atau dikunci.");
-    // Kamu bisa panggil store.logout() di sini jika diperlukan
   } else {
-    console.log("Akun berubah dari ekstensi ke:", accountArray[0]);
     try {
-      // Hubungkan ulang secara otomatis agar state di Pinia langsung sinkron
       const provider = await getProvider();
       await store.connectMetaMask(provider);
-    } catch (err) {
-      console.error("Gagal sinkronisasi otomatis akun baru:", err);
-    }
+    } catch (err) {}
   }
 };
 
-// Siklus hidup komponen untuk memasang event listener MetaMask
 onMounted(async () => {
   if (typeof window !== "undefined" && window.ethereum) {
     window.ethereum.on("accountsChanged", handleAccountsChanged);
@@ -173,14 +165,14 @@ const connect = async (): Promise<void> => {
           </template>
         </UInput>
       </UFormField>
-      <section class="flex justify-between mt-5">
+      <!-- <section class="flex justify-between mt-5">
         <div class="flex items-center gap-x-3">
           <UCheckbox v-model="rememberMe" />
           <p>Ingat Saya</p>
         </div>
 
         <ULink>Lupa Password?</ULink>
-      </section>
+      </section> -->
 
       <UButton
         type="submit"
@@ -202,27 +194,15 @@ const connect = async (): Promise<void> => {
       <span class="mx-4 text-sm text-gray-500"> atau lanjutkan dengan </span>
       <div class="grow border border-t border-gray-300"></div>
     </div>
-
-    <UModal v-model:open="openModal">
-      <UButton
-        @click="connect"
-        :loading="store.isLoading('CONNECT_WALLET')"
-        label="Connect Wallet"
-        variant="solid"
-        icon="token-branded:metamask"
-        block
-        class="mt-5 rounded-full py-3"
-      />
-
-      <template #content>
-        <div class="flex justify-center p-5">
-          <UIcon
-            name="line-md:loading-twotone-loop"
-            class="size-10 text-primary"
-          />
-        </div>
-      </template>
-    </UModal>
+    <UButton
+      @click="connect"
+      :loading="store.isLoading('CONNECT_WALLET')"
+      label="Connect Wallet"
+      variant="solid"
+      icon="token-branded:metamask"
+      block
+      class="mt-5 rounded-full py-3"
+    />
 
     <p v-if="error" class="text-red-500 mt-4 text-sm">
       {{ error }}

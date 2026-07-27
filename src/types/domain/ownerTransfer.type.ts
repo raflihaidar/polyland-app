@@ -58,7 +58,7 @@ export interface ApplicationData {
   land: Land;
   landOffice: LandOffice;
   canPay: boolean;
-  payment : {order_id : string, paidAt : 'string'}
+  payment: { order_id: string; paidAt: "string" };
 }
 
 export interface Land {
@@ -128,22 +128,29 @@ export interface ApplicationDocument {
 }
 
 export interface ApplicationPayment {
-  id : string,
-  order_id : string,
-  expireAt : string,
-  createdAt : string,
-  status : PaymentStatus,
-  qr_url : string,
-  amount : number,
-  application : {
-    id : string,
-    file_number : string
-  }
+  id: string;
+  order_id: string;
+  expireAt: string;
+  createdAt: string;
+  status: PaymentStatus;
+  qr_url: string;
+  amount: number;
+  application: {
+    id: string;
+    file_number: string;
+  };
 }
 
 type PersonView = Pick<Person, "id" | "name" | "nik" | "email" | "phone"> & {
-  ktp_pembeli: ApplicationDocument | File | null;
-  kk_pembeli: ApplicationDocument | File | null;
+  marital_status: "menikah" | "belum_menikah";
+  ktp_pembeli?: ApplicationDocument | File | null;
+  kk_pembeli?: ApplicationDocument | File | null;
+  ktp_penjual?: ApplicationDocument | File | null;
+  kk_penjual?: ApplicationDocument | File | null;
+  surat_nikah_penjual?: ApplicationDocument | File | null;
+  surat_nikah_pembeli?: ApplicationDocument | File | null;
+  npwp_pembeli?: ApplicationDocument | File | null;
+  npwp_penjual?: ApplicationDocument | File | null;
 };
 
 export interface Owner {
@@ -168,12 +175,10 @@ export interface CertificateData {
 }
 
 export const fileLabels: Record<string, string> = {
-  cert_file: "Sertifikat Tanah",
   akta_jual_beli: "Akta Jual Beli",
-  fc_sppt: "Fotokopi SPPT",
-  fc_pbb: "Fotokopi PBB",
-  ssb: "SSB",
-  ktp_penjual: "KTP Penjual",
+  bphtb: "BPHTB",
+  pph: "PPH",
+  sppt_pbb: "SPPT PBB",
 };
 
 export const docTypeToLabel: Record<string, string> = {

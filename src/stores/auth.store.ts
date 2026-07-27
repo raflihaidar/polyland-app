@@ -2,15 +2,13 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useApi, useApiPrivate } from "../composables/useApi";
 import type { PersonCreate, User } from "../types/domain/person.type";
-// import { walletClient } from "../lib/walletClient";
-// import { ethereum } from "@/lib/metamaskSDK";
 import { signLoginMessage } from "../lib/signMessage";
 
 export const useAuthStore = defineStore(
   "auth",
   () => {
     const user = ref<User | null>(null);
-    const address = ref<string | null>(null);
+    const address = ref<`0x${string}` | null>(null);
     const chainId = ref<string | null>(null);
     const loadArr = ref<string[]>([]);
     const privileges = ref<Record<string, boolean>>({});
@@ -98,10 +96,14 @@ export const useAuthStore = defineStore(
     };
 
     const logout = async () => {
-      const { data } = await useApi().get("/auth/logout", {});
-      if (data) {
-        user.value = null;
-        privileges.value = {};
+      try {
+        const { data } = await useApiPrivate().post("/auth/logout", {});
+        if (data) {
+          user.value = null;
+          privileges.value = {};
+        }
+      } catch (error) {
+        throw error;
       }
     };
 
@@ -126,24 +128,44 @@ export const useAuthStore = defineStore(
     };
 
     const requestWalletNonce = async (walletAddress: string) => {
-      const { data } = await useApi().post("/auth/wallet/nonce", {
-        walletAddress,
-      });
-      return {
-        message: data.message,
-      };
+      try {
+        const { data } = await useApi().post("/auth/wallet/nonce", {
+          walletAddress,
+        });
+        return {
+          message: data.message,
+          nonce: data.nonce,
+        };
+      } catch (error: any) {
+        return {
+          message: error.response.data?.message,
+          data: null,
+        };
+      }
     };
 
     const verifyWalletLogin = async (
       walletAddress: string,
       signature: string,
     ) => {
-      const res = await useApi().post("/auth/wallet/verify", {
-        walletAddress,
-        signature,
-      });
+      try {
+        const { data } = await useApi().post("/auth/wallet/verify", {
+          walletAddress,
+          signature,
+        });
 
-      return res;
+        return {
+          status: "success",
+          message: data.message,
+          data: data.valid,
+        };
+      } catch (error: any) {
+        return {
+          status: "error",
+          message: error.response.data?.message,
+          data: null,
+        };
+      }
     };
 
     const connectMetaMask = async (provider: any) => {
@@ -165,26 +187,37 @@ export const useAuthStore = defineStore(
           method: "eth_accounts",
         })) as string[];
 
-        const walletAddress = addresses?.[0];
+        address.value = addresses?.[0]! as `0x${string}`;
 
-        if (!walletAddress) {
+        if (!address.value) {
           throw new Error("Wallet tidak terhubung");
         }
 
         // 3. Ambil nonce dari backend menggunakan alamat yang valid & aktif
-        const { message } = await requestWalletNonce(walletAddress);
+        const { message, nonce } = await requestWalletNonce(address.value);
+
+        if (!nonce) {
+          return {
+            status: "error",
+            message,
+          };
+        }
 
         // 4. PERBAIKAN: Kirim walletAddress ke fungsi sign agar viem mereferensikan akun yang tepat
-        const signature = await signLoginMessage(message, walletAddress);
+        const signature = await signLoginMessage(message, address.value);
 
         // 5. Kirim data ke backend untuk diverifikasi
-        const { data } = await verifyWalletLogin(walletAddress, signature);
+        const { status, message: verifyMessage } = await verifyWalletLogin(
+          address.value,
+          signature,
+        );
 
         return {
-          status: data.status,
-          message: data.message,
+          status,
+          message: verifyMessage,
         };
       } catch (err: any) {
+        console.log(err);
         return {
           status: "error",
           message: err.message || "Gagal login dengan Metamask",

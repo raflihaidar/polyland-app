@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  onMounted,
-  resolveComponent,
-} from "vue";
+import { ref, computed, onMounted, resolveComponent } from "vue";
 import { useAuthStore } from "@/stores/auth.store";
 import { useApiPrivate } from "@/composables/useApi";
 import { useRouter } from "vue-router";
@@ -130,7 +125,7 @@ const getRecentApplications = async () => {
     const applications = res.data?.data?.applications;
     recentApplications.value = Array.isArray(applications) ? applications : [];
   } catch (error) {
-    console.error("Gagal memuat permohonan terbaru:", error);
+    // console.error("Gagal memuat permohonan terbaru:", error);
     recentApplications.value = [];
   } finally {
     isLoadingRecent.value = false;

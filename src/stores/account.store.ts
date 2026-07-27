@@ -25,6 +25,7 @@ export const useAccountStore = defineStore("account", () => {
       const { data } = await useApiPrivate().get(
         "/verification-account/check-account",
       );
+
       isAccountVerified.value = data.data;
       return {
         status: data.data,

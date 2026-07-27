@@ -4,14 +4,17 @@ import { useIPFSStore } from "@/stores/ipfs.store";
 import { onMounted, ref, provide, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { getAccount, walletClient } from "@/lib/walletClient";
-import { keccak256 } from "viem";
-import { decrypt } from "eciesjs";
+import { hexToBytes, keccak256 } from "viem";
 import { Buffer } from "buffer";
 import type { CertificateDetail, CertificateType } from "@/types";
 import { formatDateIndonesia } from "@/utils/formatter";
 import PdfViewer from "./components/PdfViewer.vue";
 import { useApiPrivate } from "@/composables/useApi";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
+import { hkdf } from "@noble/hashes/hkdf.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+// import { hexToBytes } from "@noble/hashes/utils.js";
+import { PrivateKey, decrypt } from "eciesjs";
 
 provide("head-title", "Detail Sertifikat");
 
@@ -145,7 +148,7 @@ const importNFTToMetamask = async () => {
       });
     }
   } catch (error: any) {
-    console.error("Import NFT gagal:", error);
+    // console.error("Import NFT gagal:", error);
     toast.add({
       title: "Gagal menambahkan NFT",
       description:
@@ -179,14 +182,37 @@ const handleViewCertificate = async () => {
 
     const account = await getAccount();
 
-    const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
+    const message =
+      "Otorisasi Kunci Sertifikat Tanah Elektronik oleh Jejak Tanahku";
     const signature = await walletClient().signMessage({
       account: account as `0x${string}`,
       message,
     });
 
-    const entropyHex = keccak256(signature);
-    const privateKeyBuffer = Buffer.from(entropyHex.slice(2), "hex");
+    // ============================================================
+    // 1. UBAH KE HKDF (Menggantikan keccak256 mentah)
+    // ============================================================
+    const salt = new TextEncoder().encode("JejakTanahku-Salt-v1");
+
+    // Menghasilkan 32 bytes entropy yang standar RFC 5869
+    const derivedKeyBytes = hkdf(
+      sha256,
+      hexToBytes(signature as `0x${string}`),
+      salt,
+      undefined,
+      32,
+    );
+
+    // ============================================================
+    // 2. REKONSTRUKSI PRIVATE KEY ECIES
+    // ============================================================
+    // derivedKeyBytes (Uint8Array) dikonversi ke Buffer untuk PrivateKey ECIES
+    const privateKeyBuffer = Buffer.from(derivedKeyBytes);
+
+    // (Opsional) Jika Anda ingin mengecek public key yang tergenerasi:
+    // const privKeyInst = new PrivateKey(privateKeyBuffer);
+    // console.log("Public Key Derivasi:", privKeyInst.publicKey.toHex());
+
     const encryptedAESKeyBase64 =
       metadataResponse?.recipients?.[0]?.encryptedKey;
 
@@ -195,18 +221,24 @@ const handleViewCertificate = async () => {
     }
 
     const encryptedKeyBuffer = Buffer.from(encryptedAESKeyBase64, "base64");
+
+    // 3. Dekripsi AES Key menggunakan PrivateKey ECIES hasil HKDF
     const decryptedAESKeyBuffer = decrypt(privateKeyBuffer, encryptedKeyBuffer);
 
     if (decryptedAESKeyBuffer.length !== 32) {
       throw new Error("AES Key tidak valid (bukan 32 bytes)");
     }
 
+    // ============================================================
+    // 4. DEKRIPSI FILE PDF DENGAN AES-GCM (Bawaan Web Crypto API)
+    // ============================================================
     const iv = Uint8Array.from(Buffer.from(metadataResponse.aes.iv, "base64"));
     const authTag = Uint8Array.from(
       Buffer.from(metadataResponse.aes.authTag, "base64"),
     );
     const ciphertext = Uint8Array.from(Buffer.from(encryptedFileRaw));
 
+    // Web Crypto API memerlukan GCM Ciphertext + AuthTag disatukan di akhir
     const encryptedCombined = new Uint8Array(
       ciphertext.length + authTag.length,
     );
@@ -227,11 +259,13 @@ const handleViewCertificate = async () => {
       encryptedCombined,
     );
 
+    // 5. Render Blob PDF
     const blob = new Blob([decryptedBuffer], { type: "application/pdf" });
     pdfUrl.value = URL.createObjectURL(blob);
     currentPage.value = 1;
     await nextTick();
     updateWidth();
+    console.log("berhasil");
   } catch (error: any) {
     console.error("Proses Dekripsi Gagal:", error);
     alert(

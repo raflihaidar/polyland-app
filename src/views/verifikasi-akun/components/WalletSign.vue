@@ -7,18 +7,22 @@ import type { VerifikasiSchema } from "../VerifikasiAkun.vue";
 import type { Ref } from "vue";
 import { MetaMaskSDK } from "@metamask/sdk";
 import { PrivateKey } from "eciesjs";
-import { keccak256 } from "viem";
+import { hexToBytes, keccak256 } from "viem";
+import { hkdf } from "@noble/hashes/hkdf.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { useAuthStore } from "@/stores/auth.store";
 
 const router = useRouter();
 const toast = useToast();
 const store = useAccountStore();
+const authStore = useAuthStore();
 
 const form = inject<Ref<Partial<VerifikasiSchema>>>("verifikasi-form")!;
 
 const publicKey = ref<string | null>(null);
 const walletAddress = ref<`0x${string}` | null>(null);
 const isConnecting = ref(false);
-const isConnected = computed(() => publicKey.value !== null);
+const isConnected = computed(() => form.value.publicKey !== "");
 
 let mmsdk: MetaMaskSDK | null = null;
 
@@ -48,7 +52,7 @@ const getProvider = async () => {
 const handleAccountsChanged = async (accounts: string[]) => {
   try {
     if (!accounts.length) {
-      publicKey.value = null;
+      form.value.publicKey = "";
       walletAddress.value = null;
 
       toast.add({
@@ -62,52 +66,39 @@ const handleAccountsChanged = async (accounts: string[]) => {
 
     const provider = await getProvider();
 
-    const { key, account } = await getEncryptionPublicKey(provider);
+    const { key } = await getEncryptionPublicKey(provider);
 
-    publicKey.value = key;
-    walletAddress.value = account;
-
-    toast.add({
-      title: "Akun berubah",
-      description: `${account.slice(0, 6)}...${account.slice(-4)}`,
-      color: "info",
-    });
-  } catch (error) {
-    console.error("Gagal menangani perubahan akun:", error);
-  }
+    form.value.publicKey = key;
+  } catch (error) {}
 };
 
 const getEncryptionPublicKey = async (provider: any) => {
-  // Paksa MetaMask menampilkan pilihan akun
-  await provider.request({
-    method: "wallet_requestPermissions",
-    params: [{ eth_accounts: {} }],
-  });
-
-  const accounts = (await provider.request({
-    method: "eth_accounts",
-  })) as string[];
-
-  const account = accounts[0] as `0x${string}`;
-
-  if (!account) {
-    throw new Error("Wallet tidak terhubung");
-  }
-
-  const message = "Otorisasi Kunci Sertifikat Digital Jejak Tanahku";
+  const message =
+    "Otorisasi Kunci Sertifikat Tanah Elektronik oleh Jejak Tanahku";
 
   const signature = (await provider.request({
     method: "personal_sign",
-    params: [message, account],
+    params: [message, authStore.address],
   })) as `0x${string}`;
 
-  const entropy = keccak256(signature);
+  // Menghasilkan 32-byte entropy yang jauh lebih tahan manipulasi
+  const salt = new TextEncoder().encode("JejakTanahku-Salt-v1");
+  const derivedKeyBytes = hkdf(
+    sha256,
+    hexToBytes(signature),
+    salt,
+    undefined,
+    32,
+  );
 
-  const privKey = new PrivateKey(Buffer.from(entropy.slice(2), "hex"));
+  // 2. Bangkitkan Private Key instans sementara dari Derived Bytes
+  const privKey = new PrivateKey(Buffer.from(derivedKeyBytes));
+
+  // 3. Ambil PUBLIC KEY-nya saja
+  const encryptionPublicKey = privKey.publicKey.toHex();
 
   return {
-    key: privKey.publicKey.toHex(),
-    account,
+    key: encryptionPublicKey,
   };
 };
 
@@ -117,16 +108,15 @@ const connectWallet = async () => {
   try {
     const provider = await getProvider();
 
-    const { key, account } = await getEncryptionPublicKey(provider);
+    const { status, message } = await authStore.connectMetaMask(provider);
 
-    publicKey.value = key;
-    walletAddress.value = account;
+    if (status !== "success") {
+      console.log(message);
+    }
 
-    toast.add({
-      title: "Wallet terhubung",
-      description: `${account.slice(0, 6)}...${account.slice(-4)}`,
-      color: "success",
-    });
+    const { key } = await getEncryptionPublicKey(provider);
+
+    form.value.publicKey = key;
   } catch (err: any) {
     toast.add({
       title: "Koneksi gagal",
@@ -137,13 +127,13 @@ const connectWallet = async () => {
     isConnecting.value = false;
   }
 };
+
 const submitAll = async (): Promise<void> => {
-  if (!publicKey.value) return;
+  if (form.value.publicKey === "") return;
 
   const payload = {
     ...form.value,
-    publicKey: publicKey.value,
-    wallet_address: walletAddress.value,
+    wallet_address: authStore.address,
   };
 
   const { status, message } = await store.submitVerification(
@@ -166,9 +156,7 @@ onMounted(async () => {
     const provider = await getProvider();
 
     provider.on("accountsChanged", handleAccountsChanged);
-  } catch (error) {
-    console.error(error);
-  }
+  } catch (error) {}
 });
 
 onUnmounted(async () => {
@@ -176,48 +164,52 @@ onUnmounted(async () => {
     const provider = await getProvider();
 
     provider.removeListener("accountsChanged", handleAccountsChanged);
-  } catch (error) {
-    console.error(error);
-  }
+  } catch (error) {}
 });
 </script>
 
 <template>
   <div class="w-full space-y-4">
     <UAlert
-      title="Wallet Sign"
-      description="Hubungkan wallet MetaMask Anda untuk menandatangani data verifikasi"
+      icon="i-heroicons-shield-check"
+      title="Pembuatan Kunci Sertifikat Digital"
+      description="Tanda tangani permintaan di MetaMask untuk membuat kunci digital pribadi Anda. Kunci ini memastikan dokumen sertifikat hanya dapat dibuka dan dibaca oleh Anda."
       variant="solid"
+      color="primary"
       class="mb-4"
     />
 
     <!-- Connect Wallet -->
     <div class="space-y-2">
-      <div v-if="isConnected" class="text-sm text-green-600">
-        ✓ Berhasil menghubungkan wallet — {{ walletAddress?.slice(0, 6) }}...{{
-          walletAddress?.slice(-4)
-        }}
-      </div>
+      <UAlert
+        v-if="isConnected"
+        title="Kunci sertifikat berhasil dibuat!"
+        icon="tabler:circle-check"
+        color="success"
+        class="mb-4"
+      />
 
       <UButton
         v-else
         block
         variant="solid"
         icon="token-branded:metamask"
-        label="Hubungkan MetaMask"
+        :label="'Buat Kunci Sertifikat'"
         :loading="isConnecting"
         @click="connectWallet"
       />
     </div>
 
-    <!-- Submit -->
-    <UButton
-      label="Kirim Verifikasi"
-      :disabled="!isConnected"
-      :loading="store.isLoading('SUBMIT_VERIFICATION')"
-      block
-      class="mt-5"
-      @click="submitAll"
-    />
+    <div class="mt-5 flex items-center gap-x-3">
+      <UButton block variant="outline" label="Kembali" @click="router.back()" />
+      <!-- Submit -->
+      <UButton
+        block
+        label="Kirim"
+        :disabled="!isConnected"
+        :loading="store.isLoading('SUBMIT_VERIFICATION')"
+        @click="submitAll"
+      />
+    </div>
   </div>
 </template>

@@ -14,15 +14,10 @@ const accountStore = useAccountStore();
 const { isAccountVerified } = storeToRefs(accountStore);
 
 const verificationModal = ref(false);
-const isDrawerOpen = ref(false);
 const router = useRouter();
 
-const openDrawer = () => {
-  if (isAccountVerified.value === "REJECTED") {
-    router.push(`/verifikasi-akun/${user.value?.id}`);
-    return;
-  }
-  isDrawerOpen.value = true;
+const goToVerifikasiAkun = () => {
+  router.push(`/verifikasi-akun/${user.value?.id}`);
 };
 
 const actions = ref<ButtonProps[]>([
@@ -31,7 +26,7 @@ const actions = ref<ButtonProps[]>([
       isAccountVerified.value !== "REJECTED" ? "Verifikasi" : "Ajukan Ulang",
     color: "secondary",
     class: "text-black",
-    onClick: openDrawer,
+    onClick: goToVerifikasiAkun,
   },
 ]);
 
@@ -42,52 +37,35 @@ const handleClickMenu = (route: string) => {
   }
   router.push(route);
 };
+
+onMounted(async () => {
+  await accountStore.checkAccount();
+});
 </script>
 
 <template>
-  <UDrawer v-model:open="isDrawerOpen" :overlay="false">
-    <UBanner
-      class="mb-5 py-3 flex whitespace-normal [&_.u-button]:w-full sm:[&_.u-button]:w-auto"
-      v-if="user && !user.isVerified"
-      :color="isAccountVerified == 'REJECTED' ? 'error' : 'warning'"
-      :actions="
-        isAccountVerified == 'not found' || isAccountVerified == 'REJECTED'
-          ? actions
-          : null
-      "
-    >
-      <template #title>
-        <span class="whitespace-normal wrap-break-words">
-          {{
-            isAccountVerified == "not found"
-              ? "Silakan lengkapi data untuk melanjutkan."
-              : isAccountVerified == "REJECTED"
-                ? "Verifikasi akun anda ditolak."
-                : "Verifikasi Akun anda sedang diproses"
-          }}
-        </span>
-      </template>
-    </UBanner>
-
-    <!-- Drawer boddy -->
+  <UBanner
+    class="mb-5 py-3 flex whitespace-normal [&_.u-button]:w-full sm:[&_.u-button]:w-auto"
+    v-if="user && !user.isVerified"
+    :color="isAccountVerified == 'REJECTED' ? 'primary' : 'warning'"
+    :actions="
+      isAccountVerified == 'not found' || isAccountVerified == 'REJECTED'
+        ? actions
+        : null
+    "
+  >
     <template #title>
-      <h3 class="px-5 text-xl text-dark-500">Pilih Jenis ID</h3>
+      <span class="whitespace-normal wrap-break-words mr-3">
+        {{
+          isAccountVerified == "not found"
+            ? "Silakan lengkapi data untuk melanjutkan."
+            : isAccountVerified == "REJECTED"
+              ? "Verifikasi akun anda ditolak."
+              : "Verifikasi Akun anda sedang diproses"
+        }}
+      </span>
     </template>
-    <template #body>
-      <RouterLink to="/verifikasi-akun?id=e-ktp" class="p-5">
-        <h4 class="font-semibold text-dark-500">
-          e-KTP (Kartu Tanda Penduduk)
-        </h4>
-        <p class="text-sm mt-2">Untuk Warga Indonesia</p>
-      </RouterLink>
-      <RouterLink to="/verifikasi-akun?id=paspor" class="p-5">
-        <h4 class="font-semibold text-dark-500">
-          Paspor / Kitas (Kartu Izin Terbatas)
-        </h4>
-        <p class="text-sm mt-2">Untuk Warga Indonesia</p>
-      </RouterLink>
-    </template>
-  </UDrawer>
+  </UBanner>
 
   <!-- News -->
   <BaseNews />
@@ -98,18 +76,12 @@ const handleClickMenu = (route: string) => {
   >
     <section class="flex items-center gap-x-3">
       <UAvatar icon="tabler:user" size="3xl" loading="lazy" />
-      <div>
+      <div class="w-full min-w-0">
         <p
-          :class="
-            user &&
-            ((user?.name && user.name.length <= 20) ||
-              (user?.username && user.username.length <= 20))
-              ? 'text-xl'
-              : 'text-lg'
-          "
-          class="my-1 font-medium text-nowrap truncate"
+          :class="user && user?.name && user.name.length <= 20 ? 'text-lg' : ''"
+          class="my-1 font-medium truncate w-full"
         >
-          {{ user?.name || user?.username }}
+          {{ user?.name }}
         </p>
         <section class="flex items-center gap-x-1">
           <UIcon
@@ -125,7 +97,7 @@ const handleClickMenu = (route: string) => {
         </section>
       </div>
     </section>
-    <UIcon name="tabler:chevron-right-filled" class="size-6" />
+    <!-- <UIcon name="tabler:chevron-right-filled" class="size-6" /> -->
   </div>
 
   <UModal title="Verifikasi Akun Diperlukan" v-model:open="verificationModal">
@@ -179,31 +151,6 @@ const handleClickMenu = (route: string) => {
             <UIcon name="tabler:chevron-right-filled" class="size-6" />
           </section>
         </div>
-
-        <!-- <div class="w-full text-center flex flex-col items-center">
-            <div
-              class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"
-            >
-              <UIcon
-                name="ri:folder-shield-line"
-                class="size-7 text-primary"
-                color="primary"
-              />
-            </div>
-            <p class="text-xs font-medium">Aktaku</p>
-          </div> -->
-        <!-- <div class="w-full text-center">
-            <div
-              class="text-center bg-white rounded-xl w-16 h-16 shadow-sm flex items-center justify-center mb-2"
-            >
-              <UIcon
-                name="ri:folder-6-line"
-                class="size-7 text-primary"
-                color="primary"
-              />
-            </div>
-            <p class="text-xs font-medium">Berkasku</p>
-          </div> -->
       </div>
     </div>
 
@@ -230,10 +177,7 @@ const handleClickMenu = (route: string) => {
           label="Verifikasi Sekarang"
           color="primary"
           block
-          @click="
-            verificationModal = false;
-            isDrawerOpen = true;
-          "
+          @click="goToVerifikasiAkun"
         />
       </div>
     </template>

@@ -12,7 +12,10 @@ interface BlockchainStats {
   totalOnChain: number;
 }
 
-async function rpcCall<T = any>(method: string, params: any[] = []): Promise<T> {
+async function rpcCall<T = any>(
+  method: string,
+  params: any[] = [],
+): Promise<T> {
   const res = await fetch(RPC_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -67,7 +70,7 @@ export function useBlockchainStatus() {
       blockchainStats.value.lastBlockNumber = blockNumber;
       blockchainStats.value.lastBlockHash = block?.hash ?? "";
     } catch (error) {
-      console.error("Gagal terhubung ke jaringan Polygon:", error);
+      // console.error("Gagal terhubung ke jaringan Polygon:", error);
       blockchainStats.value.networkStatus = "disconnected";
     }
   };

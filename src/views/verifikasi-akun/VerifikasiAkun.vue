@@ -3,11 +3,12 @@ import { onMounted, provide, ref, shallowRef } from "vue";
 import * as z from "zod";
 import { CalendarDate } from "@internationalized/date";
 import { Gender } from "../../types";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAccountStore } from "@/stores/account.store";
 
 provide("head-title", "Verifikasi Akun");
 const route = useRoute();
+const router = useRouter();
 const accountStore = useAccountStore();
 
 const schema = z.object({
@@ -58,22 +59,41 @@ const form = ref<Partial<VerifikasiSchema>>({
   publicKey: "",
 });
 
+const rejectionReason = ref("");
+
 const modelValue = shallowRef(new CalendarDate(2022, 1, 10));
 
 provide("verifikasi-form", form);
 provide("verifikasi-schema", schema);
 provide("verifikasi-model-date", modelValue);
 
-onMounted(() => {
+onMounted(async () => {
   const personId = route.params?.id;
   if (personId) {
-    accountStore.getAccount(personId as string);
+    const res = await accountStore.getAccount(personId as string);
+
+    if (res.data.status === "PENDING" || res.data.status === "APPROVED") {
+      router.back();
+      return;
+    }
+
+    form.value = res.data;
+    rejectionReason.value = res.data.rejectionReason;
   }
 });
 </script>
 
 <template>
   <div class="w-full">
+    <UAlert
+      v-if="rejectionReason"
+      title="Alasan penolakan"
+      :description="rejectionReason"
+      variant="outline"
+      color="primary"
+      class="mb-4"
+      icon="tabler:alert-circle"
+    />
     <RouterView />
   </div>
 </template>

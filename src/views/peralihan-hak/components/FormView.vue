@@ -220,6 +220,103 @@ const sharedDocs = computed(
       </div>
     </div>
 
+    <div class="border border-default rounded-xl overflow-hidden">
+      <div class="bg-elevated/50 px-6 py-4 border-b border-default">
+        <p class="font-semibold text-sm flex items-center gap-2">
+          <UIcon name="i-lucide-users" class="size-4 text-primary" />
+          Data Penjual
+        </p>
+      </div>
+      <div class="p-6 space-y-4">
+        <div
+          v-for="(sellerEntry, idx) in detailData.sellers"
+          :key="sellerEntry.person.id"
+          class="border border-default rounded-lg overflow-hidden"
+        >
+          <div
+            class="bg-elevated/30 px-4 py-2.5 border-b border-default flex items-center justify-between"
+          >
+            <span class="text-sm font-medium text-muted"
+              >Pemilik ke-{{ Number(idx) + 1 }}</span
+            >
+          </div>
+          <div class="p-4 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <UFormField label="Nama Lengkap">
+                <UInput
+                  :value="sellerEntry.person.name"
+                  readonly
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField label="NIK">
+                <UInput
+                  :value="sellerEntry.person.nik"
+                  readonly
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField label="No. Telepon">
+                <UInput
+                  :value="sellerEntry.person.phone"
+                  readonly
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField label="Email">
+                <UInput
+                  :value="sellerEntry.person.email"
+                  readonly
+                  class="w-full"
+                />
+              </UFormField>
+            </div>
+            <div
+              v-if="sellerEntry.person.document?.length"
+              class="border-t border-default pt-4"
+            >
+              <p
+                class="text-xs font-medium text-muted mb-3 flex items-center gap-1.5"
+              >
+                <UIcon name="i-lucide-paperclip" class="size-3.5" />
+                Dokumen Pemilik {{ Number(idx) + 1 }}
+              </p>
+              <div class="grid grid-cols-2 gap-3">
+                <a
+                  v-for="doc in sellerEntry.person.document"
+                  :key="doc.id"
+                  :href="getFileUrl(doc.fileUrl)"
+                  target="_blank"
+                  class="flex items-center gap-3 p-3 border border-default rounded-lg hover:bg-elevated/50 transition-colors group"
+                >
+                  <div
+                    class="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"
+                  >
+                    <UIcon
+                      name="i-lucide-file-text"
+                      class="size-4 text-primary"
+                    />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium truncate">
+                      {{ docTypeToLabel[doc.type] ?? doc.type }}
+                    </p>
+                    <p class="text-xs text-muted truncate">
+                      {{ doc.fileName }}
+                    </p>
+                  </div>
+                  <UIcon
+                    name="i-lucide-external-link"
+                    class="size-3.5 text-muted group-hover:text-primary transition-colors shrink-0"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Data Tanah & Sertifikat -->
     <div class="border border-default rounded-xl overflow-hidden">
       <div class="bg-elevated/50 px-6 py-4 border-b border-default">

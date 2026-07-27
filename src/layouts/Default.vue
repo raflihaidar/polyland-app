@@ -1,10 +1,20 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth.store";
+import { useConfirmDialog } from "@/composables/useConfirmModal";
+import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
+import { capitalizeFirstLetter } from "@/utils/formatter";
 
+const router = useRouter();
 const route = useRoute();
 const open = ref(false);
+const authStore = useAuthStore();
+const openMenuPopover = ref(false);
+const isLoading = ref(false);
+const confirm = useConfirmDialog();
+const toast = useToast();
 
 const links = [
   [
@@ -66,6 +76,27 @@ const links = [
     },
   ],
 ] satisfies NavigationMenuItem[][];
+
+const logout = async () => {
+  try {
+    const isConfirmed = await confirm({
+      title: "Logout",
+      description: "Apakah Anda yakin ingin logout dari akun ini?",
+    });
+    if (!isConfirmed) return;
+    isLoading.value = true;
+    await authStore.logout();
+    router.push("/login");
+  } catch (error) {
+    console.log(error);
+    toast.add({
+      title: "Logout Gagal, silahkan coba lagi",
+      color: "error",
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
 </script>
 
 <template>
@@ -110,6 +141,47 @@ const links = [
         <UDashboardNavbar :title="route.meta?.title">
           <template #leading>
             <UDashboardSidebarCollapse />
+          </template>
+          <template #right>
+            <UPopover v-model:open="openMenuPopover">
+              <div
+                class="flex items-center gap-x-3 cursor-pointer"
+                @click="openMenuPopover = true"
+              >
+                <UAvatar size="xl" icon="tabler:user" />
+                <p class="font-medium">
+                  {{
+                    capitalizeFirstLetter(authStore.user?.username || "unknown")
+                  }}
+                </p>
+              </div>
+              <template #content>
+                <div class="w-64">
+                  <div
+                    class="flex items-center gap-x-3 border-b border-gray-400 p-3 cursor-pointer"
+                  >
+                    <UIcon
+                      name="tabler:user-square-rounded"
+                      class="size-10 text-primary"
+                    />
+                    <section>
+                      <h4 class="text-sm font-medium">Profil</h4>
+                      <p class="text-xs text-dark">Lihat detail profil</p>
+                    </section>
+                  </div>
+                  <div class="p-3">
+                    <UButton
+                      class="m-0"
+                      icon="tabler:logout"
+                      label="Keluar"
+                      @click="logout"
+                      :loading="isLoading"
+                      block
+                    />
+                  </div>
+                </div>
+              </template>
+            </UPopover>
           </template>
         </UDashboardNavbar>
       </template>
