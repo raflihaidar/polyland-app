@@ -29,8 +29,10 @@ const statusBerkasMapping = [
 ];
 
 const handlePayment = async () => {
-  if(detailBerkas.value){
-    router.push(`/cari-berkas/pembayaran/${detailBerkas.value.payment.order_id}`)
+  if (detailBerkas.value) {
+    router.push(
+      `/cari-berkas/pembayaran/${detailBerkas.value.payment.order_id}`,
+    );
   }
 };
 
@@ -83,7 +85,11 @@ onMounted(() => {
       <section class="w-full flex justify-between items-start flex-col">
         <p class="font-bold text-lg">Peralihan Hak Jual Beli</p>
         <p
-          :class="['font-semibold', 'text-sm', statusTextColor[detailBerkas.status]]"
+          :class="[
+            'font-semibold',
+            'text-sm',
+            statusTextColor[detailBerkas.status],
+          ]"
           class="text-nowrap"
         >
           {{ statusLabel }}
@@ -93,12 +99,14 @@ onMounted(() => {
       <section class="w-full mt-5 border-b border-slate-200 pb-3">
         <div class="flex items-center justify-between mb-3">
           <p>Biaya</p>
-          <p class="text-primary font-medium">{{ formatRupiah(detailBerkas.total_fee) }}</p>
+          <p class="text-primary font-medium">
+            {{ formatRupiah(detailBerkas.total_fee) }}
+          </p>
         </div>
 
         <div class="flex items-center justify-between mb-3">
           <p>Petugas</p>
-          <p>{{detailBerkas.officer?.name || '-' }}</p>
+          <p>{{ detailBerkas.officer?.name || "-" }}</p>
         </div>
 
         <div class="flex items-center justify-between mb-3">
@@ -108,7 +116,7 @@ onMounted(() => {
 
         <div class="flex items-center justify-between mb-3">
           <p>Selesai</p>
-          <p>{{ formatDateIndonesia(detailBerkas.payment.paidAt) || "-" }}</p>
+          <p>{{ formatDateIndonesia(detailBerkas.payment?.paidAt) || "-" }}</p>
         </div>
       </section>
 

@@ -24,12 +24,12 @@ const addSeller = () => {
       nik: "",
       phone: "",
       email: "",
+      marital_status: "belum_menikah",
       kk_penjual: null,
       ktp_penjual: null,
       surat_nikah_penjual: null,
       npwp_penjual: null,
-    } as any,
-    marital_status: "belum_menikah",
+    },
     share: "0",
   } as any);
 };
@@ -90,14 +90,14 @@ const removeSeller = (index: number) => {
           Data Penjual
         </p>
       </div>
-      <UButton
+      <!-- <UButton
         label="Tambah Penjual"
         icon="i-lucide-plus"
         size="sm"
         color="neutral"
         variant="outline"
         @click="addSeller"
-      />
+      /> -->
     </div>
 
     <div class="p-6 space-y-4">
@@ -109,9 +109,7 @@ const removeSeller = (index: number) => {
         <div
           class="bg-elevated/30 px-4 py-2.5 border-b border-default flex items-center justify-between"
         >
-          <span class="text-sm font-medium text-muted"
-            >Penjual ke-{{ index + 1 }}</span
-          >
+          <span class="text-sm font-medium text-muted">Penjual</span>
           <div class="flex items-center gap-2">
             <UButton
               label="Cari Data"
@@ -125,14 +123,14 @@ const removeSeller = (index: number) => {
               :variant="seller.mode === 'manual' ? 'solid' : 'outline'"
               @click="seller.mode = 'manual'"
             />
-            <UButton
+            <!-- <UButton
               icon="i-lucide-trash-2"
               size="xs"
               color="error"
               variant="ghost"
               :disabled="sellers.length === 1"
               @click="removeSeller(index)"
-            />
+            /> -->
           </div>
         </div>
 
@@ -313,7 +311,7 @@ const removeSeller = (index: number) => {
                 />
               </div>
               <div
-                v-if="(seller as any).marital_status === 'menikah'"
+                v-if="(seller as any).person.marital_status === 'menikah'"
                 class="flex flex-col gap-1.5"
               >
                 <label class="text-sm font-medium">

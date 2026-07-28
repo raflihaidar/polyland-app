@@ -100,7 +100,7 @@ const logout = async () => {
 </script>
 
 <template>
-  <UDashboardGroup unit="rem" storage="local">
+  <UDashboardGroup unit="rem">
     <UDashboardSidebar
       id="default"
       v-model:open="open"
@@ -130,10 +130,6 @@ const logout = async () => {
           class="mt-auto"
         />
       </template>
-
-      <!-- <template #footer="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
-      </template> -->
     </UDashboardSidebar>
 
     <UDashboardPanel :id="route.name">
@@ -190,7 +186,5 @@ const logout = async () => {
         <RouterView />
       </template>
     </UDashboardPanel>
-
-    <NotificationsSlideover />
   </UDashboardGroup>
 </template>
