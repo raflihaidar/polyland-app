@@ -294,13 +294,13 @@ watch(
   },
 );
 
-watch(
-  () => typeFilter.value,
-  () => {
-    serverPagination.value.page = 1;
-    getApplicationList();
-  },
-);
+// watch(
+//   () => typeFilter.value,
+//   () => {
+//     serverPagination.value.page = 1;
+//     getApplicationList();
+//   },
+// );
 
 watch(
   () => selectedDate.value,
@@ -334,7 +334,7 @@ onMounted(async () => {
 
 <template>
   <!-- Filter Bar -->
-  <div class="flex flex-wrap items-center justify-between gap-1.5">
+  <div class="flex items-center justify-between gap-1.5">
     <div class="flex items-center gap-x-3 w-1/2">
       <!-- Search Input -->
       <UInput
@@ -345,7 +345,7 @@ onMounted(async () => {
       />
     </div>
 
-    <div class="flex flex-wrap items-center gap-1.5">
+    <div class="flex items-center gap-1.5">
       <!-- Date Filter -->
       <UInput
         v-model="selectedDate"
@@ -355,7 +355,7 @@ onMounted(async () => {
       />
 
       <!-- Type Filter -->
-      <USelect
+      <!-- <USelect
         v-model="typeFilter"
         :items="[
           { label: 'Semua Tipe', value: 'all' },
@@ -369,7 +369,7 @@ onMounted(async () => {
         }"
         placeholder="Tipe Sertifikat"
         class="min-w-40"
-      />
+      /> -->
 
       <!-- Status Filter -->
       <USelect

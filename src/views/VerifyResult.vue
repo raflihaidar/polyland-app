@@ -110,7 +110,7 @@ const formatArea = (val: string | number) => {
         <h2 class="state-title error-title">Verifikasi Gagal</h2>
         <p class="state-desc">{{ error }}</p>
         <UButton
-          to="/scan"
+          to="/scan-qr"
           variant="outline"
           color="red"
           size="sm"

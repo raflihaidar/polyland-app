@@ -41,7 +41,7 @@ const sharedDocs = computed(
     <!-- Edit mode: show existing shared docs -->
     <div
       v-if="editMode && sharedDocs.length"
-      class="px-6 pt-5 grid grid-cols-2 md:grid-cols-3 gap-3"
+      class="px-6 pt-5 grid grid-cols-2 md:grid-cols-4 gap-3"
     >
       <a
         v-for="doc in sharedDocs"
@@ -68,7 +68,7 @@ const sharedDocs = computed(
       </a>
     </div>
 
-    <div class="p-6 grid grid-cols-3 gap-4">
+    <div class="p-6 grid grid-cols-4 gap-4">
       <div
         v-for="(label, key) in fileLabels"
         :key="key"

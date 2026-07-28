@@ -197,6 +197,7 @@ export const statusColor: Record<string, any> = {
   MENUNGGU_PEMBAYARAN: "warning",
   VERIFIKASI_PEMBAYARAN: "info",
   PROSES_PENERBITAN: "primary",
+  PENERBITAN_GAGAL: "primary",
 
   PEMBAYARAN_DIBATALKAN: "error",
   PEMBAYARAN_KADALUARSA: "error",
@@ -213,6 +214,7 @@ export const statusTextColor: Record<string, string> = {
   MENUNGGU_PEMBAYARAN: "text-yellow-600",
   VERIFIKASI_PEMBAYARAN: "text-blue-600",
   PROSES_PENERBITAN: "text-primary",
+  PENERBITAN_GAGAL: "text-primary",
   PEMBAYARAN_DIBATALKAN: "text-red-600",
   PEMBAYARAN_KADALUARSA: "text-red-600",
   PEMBAYARAN_DIKEMBALIKAN: "text-yellow-600",
@@ -226,6 +228,7 @@ export const statusLabel: Record<string, string> = {
   MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
   VERIFIKASI_PEMBAYARAN: "Verifikasi Pembayaran",
   PROSES_PENERBITAN: "Dalam Proses Penerbitan",
+  PENERBITAN_GAGAL: "Penerbitan Gagal",
 
   PEMBAYARAN_DIBATALKAN: "Pembayaran Dibatalkan",
   PEMBAYARAN_KADALUARSA: "Pembayaran Kedaluwarsa",

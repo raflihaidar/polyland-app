@@ -183,11 +183,9 @@ onMounted(async () => {
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-xl font-semibold text-highlighted">Dashboard</h1>
-        <p class="text-sm text-muted mt-1">
-          Ringkasan layanan verifikasi & penerbitan sertifikat tanah berbasis
-          blockchain
-        </p>
+        <h1 class="text-xl font-semibold text-highlighted">
+          Semangat Pagi!, {{ authStore.user?.name }}
+        </h1>
       </div>
 
       <UButton
@@ -375,7 +373,7 @@ onMounted(async () => {
               trailing
               variant="ghost"
               size="sm"
-              @click="router.push('/admin/peralihan-hak/permohonan')"
+              @click="router.push('/admin/peralihan-hak/list-permohonan')"
             />
           </div>
         </template>

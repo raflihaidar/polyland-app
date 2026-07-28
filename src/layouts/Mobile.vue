@@ -17,6 +17,9 @@ const isAuthPage = computed(() => {
     "public.verify-certificate",
     "hasil pembayaran",
     "konfirmasi-verifikasi-akun",
+    "pembayaran permohonan",
+    "hasil pembayaran",
+    "public.scan-qr",
   ].includes(route.name as string);
 });
 </script>

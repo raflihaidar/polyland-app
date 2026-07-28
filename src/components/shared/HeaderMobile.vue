@@ -39,7 +39,7 @@ const isMainPage = computed(() => {
     <UIcon
       v-if="!isMainPage"
       name="ri:arrow-left-line"
-      class="size-6"
+      class="size-6 cursor-pointer"
       @click="router.back"
     />
     <p class="text-center w-full font-semibold">{{ route.meta?.title }}</p>

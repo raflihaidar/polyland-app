@@ -57,6 +57,15 @@ const sharedDocs = computed(
         label="Terbitkan Sertifikat"
         @click="emit('generate-certificate')"
         color="primary"
+        icon="ix:publish-document"
+      />
+
+      <UButton
+        v-if="detailData?.status === 'PENERBITAN_GAGAL'"
+        label="Terbitkan Ulang"
+        @click="emit('generate-certificate')"
+        color="primary"
+        icon="solar:restart-linear"
       />
     </section>
 
@@ -134,9 +143,7 @@ const sharedDocs = computed(
           <div
             class="bg-elevated/30 px-4 py-2.5 border-b border-default flex items-center justify-between"
           >
-            <span class="text-sm font-medium text-muted"
-              >Pemilik ke-{{ Number(idx) + 1 }}</span
-            >
+            <span class="text-sm font-medium text-muted">Pemilik baru</span>
             <UBadge
               color="neutral"
               variant="outline"
@@ -224,7 +231,7 @@ const sharedDocs = computed(
       <div class="bg-elevated/50 px-6 py-4 border-b border-default">
         <p class="font-semibold text-sm flex items-center gap-2">
           <UIcon name="i-lucide-users" class="size-4 text-primary" />
-          Data Penjual
+          Data Pemilik Lama
         </p>
       </div>
       <div class="p-6 space-y-4">
@@ -236,9 +243,7 @@ const sharedDocs = computed(
           <div
             class="bg-elevated/30 px-4 py-2.5 border-b border-default flex items-center justify-between"
           >
-            <span class="text-sm font-medium text-muted"
-              >Pemilik ke-{{ Number(idx) + 1 }}</span
-            >
+            <span class="text-sm font-medium text-muted">Pemilik lama</span>
           </div>
           <div class="p-4 space-y-4">
             <div class="grid grid-cols-2 gap-4">

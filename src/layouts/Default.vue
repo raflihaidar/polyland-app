@@ -77,6 +77,10 @@ const links = [
   ],
 ] satisfies NavigationMenuItem[][];
 
+const toggleMenuPopover = () => {
+  openMenuPopover.value = openMenuPopover.value ? true : false;
+};
+
 const logout = async () => {
   try {
     const isConfirmed = await confirm({
@@ -135,14 +139,14 @@ const logout = async () => {
     <UDashboardPanel :id="route.name">
       <template #header>
         <UDashboardNavbar :title="route.meta?.title">
-          <template #leading>
+          <!-- <template #leading>
             <UDashboardSidebarCollapse />
-          </template>
+          </template> -->
           <template #right>
             <UPopover v-model:open="openMenuPopover">
               <div
                 class="flex items-center gap-x-3 cursor-pointer"
-                @click="openMenuPopover = true"
+                @click="toggleMenuPopover"
               >
                 <UAvatar size="xl" icon="tabler:user" />
                 <p class="font-medium">
@@ -150,6 +154,12 @@ const logout = async () => {
                     capitalizeFirstLetter(authStore.user?.username || "unknown")
                   }}
                 </p>
+                <UIcon
+                  v-if="!openMenuPopover"
+                  name="tabler:chevron-down"
+                  class="text-xl"
+                />
+                <UIcon v-else name="tabler:chevron-up" class="text-xl" />
               </div>
               <template #content>
                 <div class="w-64">

@@ -19,7 +19,6 @@ const authStore = useAuthStore();
 
 const form = inject<Ref<Partial<VerifikasiSchema>>>("verifikasi-form")!;
 
-const publicKey = ref<string | null>(null);
 const walletAddress = ref<`0x${string}` | null>(null);
 const isConnecting = ref(false);
 const isConnected = computed(() => form.value.publicKey !== "");

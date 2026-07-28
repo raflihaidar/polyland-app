@@ -14,15 +14,15 @@ import type { TimelineItem } from "@nuxt/ui";
 
 const items = ref<TimelineItem[]>([
   {
-    title: "Data Pembeli",
+    title: "Data Pemilik Baru",
     value: 0,
     description: "Lengkapi data pemilik baru.",
     icon: "i-lucide-user",
   },
   {
-    title: "Data Penjual",
+    title: "Data Pemilik Lama",
     value: 1,
-    description: "Lengkapi data penjual.",
+    description: "Lengkapi data pemilik lama.",
     icon: "i-lucide-user-check",
   },
   {

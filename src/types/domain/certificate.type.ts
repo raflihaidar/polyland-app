@@ -25,7 +25,7 @@ export type CertificateParams = {
   page: number;
   limit: number;
   search: string;
-  status: CertificateStatus | null;
+  status: CertificateStatus | null | string;
   type: CertificateType | null | string;
   sortOrder: "asc" | "desc";
   sortBy: "createdAt" | "label";

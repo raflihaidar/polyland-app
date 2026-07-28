@@ -7,16 +7,19 @@ import { getAccount, walletClient } from "@/lib/walletClient";
 import { hexToBytes, keccak256 } from "viem";
 import { Buffer } from "buffer";
 import type { CertificateDetail, CertificateType } from "@/types";
-import { formatDateIndonesia } from "@/utils/formatter";
+import { formatDate, formatDateIndonesia } from "@/utils/formatter";
 import PdfViewer from "./components/PdfViewer.vue";
 import { useApiPrivate } from "@/composables/useApi";
 import { useToast } from "@nuxt/ui/runtime/composables/useToast.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 // import { hexToBytes } from "@noble/hashes/utils.js";
+import { MetaMaskSDK } from "@metamask/sdk";
 import { PrivateKey, decrypt } from "eciesjs";
 
 provide("head-title", "Detail Sertifikat");
+
+let mmsdk: MetaMaskSDK | null = null;
 
 const api = useApiPrivate();
 const store = useIPFSStore();
@@ -162,6 +165,29 @@ const importNFTToMetamask = async () => {
   }
 };
 
+const getProvider = async () => {
+  if (typeof window !== "undefined" && window.ethereum) {
+    return window.ethereum;
+  }
+
+  // Lazy-load SDK jika di lingkungan client browser
+  if (!mmsdk && typeof window !== "undefined") {
+    mmsdk = new MetaMaskSDK({
+      dappMetadata: {
+        name: "Jejak Tanahku",
+        url: window.location.href,
+      },
+    });
+  }
+
+  if (mmsdk) {
+    await mmsdk.connect();
+    return mmsdk.getProvider();
+  }
+
+  throw new Error("MetaMask Provider tidak ditemukan");
+};
+
 const handleViewCertificate = async () => {
   if (!certificate.value) return;
 
@@ -180,7 +206,20 @@ const handleViewCertificate = async () => {
       throw new Error("Data IPFS tidak ditemukan");
     }
 
-    const account = await getAccount();
+    const provider = await getProvider();
+
+    // 1. SOLUSI UTAMA: Paksa MetaMask memunculkan pop-up pilihan akun untuk sinkronisasi
+    await provider.request({
+      method: "wallet_requestPermissions",
+      params: [{ eth_accounts: {} }],
+    });
+
+    // 2. Ambil alamat akun yang baru saja dipilih/diizinkan oleh user
+    const addresses = (await provider.request({
+      method: "eth_accounts",
+    })) as string[];
+
+    const account = addresses?.[0]! as `0x${string}`;
 
     const message =
       "Otorisasi Kunci Sertifikat Tanah Elektronik oleh Jejak Tanahku";
@@ -353,7 +392,7 @@ onMounted(async () => {
             :loading="isDecrypting"
             block
           >
-            {{ isDecrypting ? "Memproses..." : "Tanda tangani digital" }}
+            {{ isDecrypting ? "Memproses..." : "Buka dengan wallet" }}
           </UButton>
         </section>
       </div>
@@ -385,7 +424,7 @@ onMounted(async () => {
           <UIcon name="tabler:calendar" class="size-6 text-primary mb-2" />
           <h3 class="font-medium text-sm text-gray-500">Tanggal Terbit</h3>
           <p class="text-sm font-medium">
-            {{ formatDateIndonesia(certificate.createdAt) }}
+            {{ formatDate(certificate.createdAt) }}
           </p>
         </div>
 

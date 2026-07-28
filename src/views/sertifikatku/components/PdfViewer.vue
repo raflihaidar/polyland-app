@@ -12,7 +12,7 @@ defineProps<{
       sidebarEnable: false,
       themeSwitchable: false,
       newFileOpenable: false,
-      downloadable: false,
+      downloadable: true,
       printable: false,
       fullscreen: false,
       searchable: false,

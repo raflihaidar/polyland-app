@@ -19,14 +19,19 @@ const router = useRouter();
 const route = useRoute();
 const api = useApiPrivate();
 
-const typeCertificate = ref<TabsItem[]>([
-  { label: "Semua", value: "" },
-  { label: "SHM", value: "SHM" },
-  { label: "SHGB", value: "SHGB" },
-  { label: "SHGU", value: "SHGU" },
+// const typeCertificate = ref<TabsItem[]>([
+//   { label: "Semua", value: "" },
+//   { label: "SHM", value: "SHM" },
+//   { label: "SHGB", value: "SHGB" },
+//   { label: "SHGU", value: "SHGU" },
+// ]);
+
+const statusList = ref<TabsItem[]>([
+  { label: "Aktif", value: "AKTIF" },
+  { label: "Tidak Aktif", value: "TIDAK_AKTIF" },
 ]);
 
-const activeTab = ref("");
+const activeTab = ref("AKTIF");
 const certificates = ref<any[]>([]);
 const isLoading = ref(false);
 const hasMore = ref(true);
@@ -38,7 +43,7 @@ const params = ref<CertificateParams>({
   limit: 10,
   search: "",
   type: null,
-  status: null,
+  status: activeTab.value,
   sortOrder: "desc",
   sortBy: "createdAt",
 });
@@ -126,7 +131,7 @@ const handleSelectedTab = (value: string) => {
   router.replace({
     query: { ...route.query, type: value || undefined },
   });
-  params.value.type = value || null;
+  params.value.status = value;
   resetAndFetch();
 };
 
@@ -267,7 +272,7 @@ onUnmounted(() => {
           variant="pill"
           v-model="activeTab"
           :content="false"
-          :items="typeCertificate"
+          :items="statusList"
           class="w-full mt-3 bg-secondary"
         />
       </div>

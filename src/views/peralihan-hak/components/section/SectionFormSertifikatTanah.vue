@@ -26,10 +26,6 @@ const searchCertificate = async (query: string) => {
 
   isCertSearching.value = true;
   if (certSearchTimeout) clearTimeout(certSearchTimeout);
-
-  // Dibungkus Promise supaya `await searchCertificate(...)` di pemanggil
-  // benar-benar menunggu sampai fetch di dalam setTimeout selesai,
-  // bukan cuma menunggu setTimeout terjadwal (yang selesai seketika).
   await new Promise<void>((resolve) => {
     certSearchTimeout = setTimeout(async () => {
       try {
