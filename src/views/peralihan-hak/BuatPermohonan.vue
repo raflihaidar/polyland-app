@@ -321,6 +321,10 @@ const signMintRequest = async (
 ): Promise<SignedForwardRequest> => {
   const recipientAddress =
     detailData.value?.owners?.[0]?.person?.wallet_address;
+  const loketAddress = detailData.value.officer?.wallet_address;
+  const nib = detailData.value.nib;
+  const jenisHak = detailData.value.type;
+  const luasTanah = detailData.value.land.area_size;
 
   if (!recipientAddress) {
     throw new Error(
@@ -334,11 +338,14 @@ const signMintRequest = async (
   }>("/ownership-transfer/request-mint-signature", {
     petugasAddress,
     recipientAddress,
+    loketAddress,
+    nib,
+    luasTanah,
+    jenisHak,
   });
 
   const typedData = data.data;
 
-  // eth_signTypedData_v4 butuh EIP712Domain type eksplisit di payload
   const payload = {
     domain: typedData.domain,
     types: {
@@ -361,8 +368,6 @@ const signMintRequest = async (
     params: [petugasAddress, JSON.stringify(payload)],
   });
 
-  // signedRequest yang dikirim ke backend TIDAK mengandung `nonce`
-  // (forwarder ambil nonce current on-chain sendiri saat verifikasi)
   return {
     from: typedData.message.from,
     to: typedData.message.to,
